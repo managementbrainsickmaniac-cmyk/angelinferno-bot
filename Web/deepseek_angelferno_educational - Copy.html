@@ -1,0 +1,864 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>AngelFerno Simulation | Security Research Demo</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+        }
+
+        body {
+            background: #0a0c12;
+            color: #eef2ff;
+            overflow-x: hidden;
+        }
+
+        /* SCROLLBAR */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #1e1f2c; border-radius: 8px; }
+        ::-webkit-scrollbar-thumb { background: #ff3b4a; border-radius: 8px; }
+
+        /* MAIN LAYOUT */
+        .app {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* SIDEBAR (matching dark panel vibe) */
+        .sidebar {
+            width: 260px;
+            background: #0f111a;
+            border-right: 1px solid #232435;
+            padding: 24px 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 32px;
+        }
+
+        .logo-area {
+            font-size: 1.6rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #ff5a6e, #ff3b4a);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            letter-spacing: -0.5px;
+            border-left: 3px solid #ff3b4a;
+            padding-left: 12px;
+        }
+        .logo-area span { font-size: 0.8rem; color: #7e849c; display: block; font-weight: normal; }
+
+        .nav-menu {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .nav-item {
+            background: transparent;
+            padding: 10px 16px;
+            border-radius: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: 0.2s;
+            color: #a1a7c2;
+        }
+        .nav-item.active, .nav-item:hover {
+            background: #1e2030;
+            color: #ff5a6e;
+        }
+
+        /* main content */
+        .main-content {
+            flex: 1;
+            padding: 28px 32px;
+            overflow-y: auto;
+            background: #0c0e16;
+        }
+
+        /* cards */
+        .card {
+            background: #131623;
+            border-radius: 28px;
+            border: 1px solid #262a3a;
+            padding: 24px;
+            margin-bottom: 28px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+        }
+        .stat-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px,1fr));
+            gap: 16px;
+        }
+        .stat-card {
+            background: #1b1e2b;
+            border-radius: 24px;
+            padding: 18px;
+            text-align: center;
+        }
+        .percent-badge {
+            font-size: 2rem;
+            font-weight: 800;
+            color: #ff5a6e;
+        }
+        .fee-badge {
+            color: #f0b34b;
+        }
+        .m1-m2-m3 {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            margin-top: 15px;
+        }
+        .m-box {
+            background: #0f111a;
+            padding: 12px 20px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 1.3rem;
+            border: 1px solid #2d3142;
+        }
+
+        /* config wizard step container */
+        .wizard-steps {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 24px;
+            border-bottom: 1px solid #262a3a;
+            padding-bottom: 16px;
+        }
+        .step-tab {
+            background: #1b1e2b;
+            padding: 8px 20px;
+            border-radius: 40px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            color: #9ca3c0;
+        }
+        .step-tab.active-step {
+            background: #ff3b4a;
+            color: white;
+        }
+        .step-content {
+            display: none;
+            animation: fade 0.2s ease;
+        }
+        .step-content.active-step-content {
+            display: block;
+        }
+        @keyframes fade { from { opacity: 0; } to { opacity: 1; } }
+
+        input, textarea, select {
+            background: #0c0e16;
+            border: 1px solid #2d3246;
+            padding: 10px 14px;
+            border-radius: 16px;
+            color: white;
+            width: 100%;
+            margin-top: 6px;
+        }
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 18px;
+        }
+        .toggle-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px;
+            margin-top: 12px;
+        }
+        .toggle-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: #1b1e2b;
+            padding: 6px 14px;
+            border-radius: 40px;
+        }
+        button {
+            background: #ff3b4a;
+            border: none;
+            color: white;
+            padding: 10px 24px;
+            border-radius: 40px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        button.secondary {
+            background: #2a2e42;
+        }
+        button.danger-outline {
+            background: transparent;
+            border: 1px solid #ff3b4a;
+        }
+        .flex-between {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+        .success-chip {
+            background: #1f3a2a;
+            color: #6fcf97;
+            border-radius: 40px;
+            padding: 8px 20px;
+        }
+        .risk-table {
+            background: #0a0c12;
+            border-radius: 20px;
+            padding: 12px;
+        }
+        .risk-row {
+            display: flex;
+            justify-content: space-between;
+            border-bottom: 1px solid #23263a;
+            padding: 8px 0;
+        }
+        .footer-note {
+            text-align: center;
+            font-size: 0.7rem;
+            color: #5b6277;
+            margin-top: 30px;
+        }
+        h2 { font-size: 1.6rem; margin-bottom: 14px; }
+        h3 { font-size: 1.2rem; margin: 16px 0 8px; color: #ffb347; }
+        hr { border-color: #262a3a; margin: 16px 0; }
+
+        @media (max-width: 780px) {
+            .app { flex-direction: column; }
+            .sidebar { width: 100%; flex-direction: row; flex-wrap: wrap; }
+            .form-grid { grid-template-columns: 1fr; }
+        }
+        .warning-badge {
+            background: #2a1f1a;
+            border-left: 4px solid #ff3b4a;
+            padding: 12px;
+            border-radius: 16px;
+            font-size: 0.75rem;
+            margin-bottom: 18px;
+        }
+        .sidebar.locked {
+            display: none;
+        }
+        .side-actions {
+            margin-top: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .auth-card {
+            max-width: 520px;
+            margin: 80px auto;
+            border-radius: 28px;
+        }
+        .brand-lock {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            margin-bottom: 22px;
+        }
+        .brand-lock-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 16px;
+            display: grid;
+            place-items: center;
+            background: #251622;
+            border: 1px solid #452032;
+            color: #ff5a6e;
+            font-size: 1.4rem;
+        }
+        .input-label {
+            display: block;
+            color: #c8cde4;
+            margin-top: 16px;
+            font-size: 0.9rem;
+            font-weight: 700;
+        }
+        .auth-copy {
+            color: #9da5c1;
+            line-height: 1.55;
+            margin-top: 8px;
+        }
+        .education-note {
+            background: #161a29;
+            border: 1px solid #30364c;
+            border-left: 4px solid #f0b34b;
+            border-radius: 16px;
+            padding: 12px;
+            color: #d8dcef;
+            font-size: 0.85rem;
+        }
+        .toast-container {
+            position: fixed;
+            top: 18px;
+            right: 18px;
+            z-index: 1000;
+            display: grid;
+            gap: 10px;
+            max-width: min(360px, calc(100vw - 36px));
+        }
+        .toast {
+            background: #151827;
+            border: 1px solid #30364d;
+            border-left: 4px solid #7e849c;
+            color: #eef2ff;
+            border-radius: 14px;
+            padding: 12px 14px;
+            box-shadow: 0 12px 30px rgba(0,0,0,0.35);
+            font-size: 0.9rem;
+        }
+        .toast.success { border-left-color: #6fcf97; }
+        .toast.error { border-left-color: #ff5a6e; }
+        .toast.warning { border-left-color: #f0b34b; }
+        .loading-overlay {
+            position: fixed;
+            inset: 0;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 999;
+            background: rgba(5,7,12,0.72);
+            backdrop-filter: blur(6px);
+        }
+        .loading-overlay.show { display: flex; }
+        .loading-box {
+            min-width: 260px;
+            background: #151827;
+            border: 1px solid #30364d;
+            border-radius: 22px;
+            padding: 24px;
+            text-align: center;
+        }
+        .loading-spinner {
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            border: 3px solid #2d3246;
+            border-top-color: #ff5a6e;
+            margin: 0 auto 14px;
+            animation: spin 0.8s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        button:disabled {
+            opacity: 0.65;
+            cursor: not-allowed;
+        }
+    </style>
+    <script src="credentials.js"></script>
+</head>
+<body>
+<div class="app">
+    <!-- SIDEBAR (navigation) -->
+    <div id="appSidebar" class="sidebar locked">
+        <div class="logo-area">
+            AngelFerno 
+            <span>SECURITY EDUCATION LAB</span>
+        </div>
+        <div class="nav-menu">
+            <div class="nav-item active" data-nav="home">🏠 Home</div>
+            <div class="nav-item" data-nav="threat">🔥 Threat Model</div>
+            <div class="nav-item" data-nav="configs">⚙️ Config Lab</div>
+            <div class="nav-item" data-nav="chat">💬 Support Drill</div>
+            <div class="nav-item" data-nav="claims">💰 Claims Demo</div>
+            <div class="nav-item" data-nav="logs">📜 Audit Logs</div>
+        </div>
+        <div class="warning-badge">
+            ⚠️ EDUCATIONAL SIMULATION ONLY — no wallet connections, no seed collection, no usable drainer output.
+        </div>
+        <div class="side-actions">
+            <button id="globalSignOutBtn" class="secondary" type="button">Logout</button>
+        </div>
+    </div>
+
+    <div class="main-content" id="mainContent">
+        <!-- LOGIN SCREEN (initial) -->
+        <div id="loginScreen" class="card auth-card">
+            <div class="brand-lock">
+                <div class="brand-lock-icon">🔐</div>
+                <div>
+                    <h2 style="margin-bottom: 2px;">Angel-Dreamers Login</h2>
+                    <div class="auth-copy">Credential-gated security research simulation.</div>
+                </div>
+            </div>
+            <div class="education-note">
+                This local lab demonstrates how high-risk drain panels appear without connecting wallets, collecting secrets, or generating operational code.
+            </div>
+            <form id="loginForm" style="margin-top: 20px;">
+                <label class="input-label" for="loginPanelId">Your Panel ID</label>
+                <input type="text" id="loginPanelId" placeholder="Enter Customer ID" autocomplete="off" maxlength="10">
+                <label class="input-label" for="loginPassword">Password</label>
+                <input type="password" id="loginPassword" placeholder="Enter password" autocomplete="off" maxlength="25">
+                <button id="loginBtn" type="submit" style="width: 100%; margin-top: 24px;">Access Panel</button>
+            </form>
+            <div class="footer-note" style="margin-top: 20px;">Educational build. Local credential verification only.</div>
+        </div>
+
+        <!-- DASHBOARD / MAIN APP (hidden until login) -->
+        <div id="dashboardArea" style="display: none;">
+            <!-- dynamic view: home, configs, wizard, etc -->
+            <div id="viewRenderer"></div>
+        </div>
+    </div>
+</div>
+<div class="toast-container" id="toastContainer"></div>
+<div id="loadingOverlay" class="loading-overlay" aria-hidden="true">
+    <div class="loading-box">
+        <div class="loading-spinner"></div>
+        <div id="loadingOverlayText">Loading...</div>
+    </div>
+</div>
+
+<script>
+    // ----------------------------------- SIMULATION STATE -----------------------------------
+    const STORAGE_LOGGED_IN = "angelfernoEdu:loggedIn";
+    const STORAGE_PANEL_ID = "angelfernoEdu:panelId";
+    let loggedIn = false;
+    let currentNav = "home";
+    let configWizardActive = false;       // wizard mode on/off
+    let currentStep = 0;
+    let loadingSafetyTimeout = null;
+    // config object holds all options from all steps
+    let userConfig = {
+        textSettings: {
+            connectButtonsClass: "interact-button",
+            disconnectButtonsClass: "disconnect-btn",
+            connectedText: "Simulated connection",
+            verifyText: "Verify consent step",
+            loadText: "Loading...",
+            rejectText: "Rejected safely",
+            safetyDrillButtonText: "Approve safety drill",
+            rejectChainText: "Network mismatch warning",
+            disconnectText: "End simulation"
+        },
+        modalVisual: {
+            metamaskText: "Simulated wallet modal copy",
+            walletConnectText: "WalletConnect lookalike warning",
+            modal1Text: "Consent prompt example",
+            modal2Text: "Allowance prompt example",
+            modal3Text: "Network prompt example",
+            popupSuccess: "Simulation step loaded safely",
+            popupVerify: "Review before signing"
+        },
+        advanced: {
+            popup5MaxTime: 15000, walletConnectProjectId: "disabled-in-simulation", logsStyle: 1, minWalletTotal: 1, maxChangeChainRetry: 0,
+            popup6MaxTime: 15000, trustSignText: "Simulated ownership prompt only", minRatioAskChange: 0.95, retryCount: 0,
+            hiddenChainName: "Training Network", blockedChainTarget: 0, tokensApi: 0, scriptsPath: "/simulation/scripts", stylesPath: "/simulation/styles",
+            imagesPath: "/simulation/images", maxSlippageSwap: 0, nftsApi: 0
+        },
+        precise: {
+            blockRealWalletCalls: true, redactSensitiveFields: true, requireEducationBanner: true, safeExportOnly: true,
+            showConsentBreakpoints: true, showAllowanceRisks: true, showNetworkMismatch: true, showSeedPhraseWarnings: true,
+            preventSeedStorage: true, disableRemoteEndpoints: true, disableCompilerOutput: true, disableDevToolBlocking: true,
+            logSimulationEvents: true, showAuditTrail: true, resetOnLogout: true, useLocalCredentialsOnly: true
+        },
+        popupConfigs: {
+            popup2: { title: "Training prompt", message: "Review permission request", maxTime: 7500 },
+            popup3: { title: "Safety checkpoint", message: "No real signing occurs", maxTime: 7500 },
+            popup4: { openFunc: "openSimulationPrompt", closeFunc: "closeSimulationPrompt", mode: 1 }
+        },
+        walletConnect: {
+            logoUrl: "", bgImage: "", bgColor: "", accentColor: "", accentFillColor: "", overlayBgColor: "",
+            fontFamily: "", colorMixStrength: 0, spoofEnable: false, spoofName: "Lookalike warning", spoofDesc: "Simulated brand spoofing lesson", spoofUrl: "", spoofIcon: ""
+        },
+        seedSafety: {
+            enabled: true, warningChecks: true, otherWalletWarnings: false, name: "Seed phrase safety",
+            logoPath: "training-only", primaryWarning: "Never enter a recovery phrase into an unknown page",
+            secretSafetyText: "Secret collection is disabled in this lab",
+            unsafeFormWarning: "Real secrets must never be used in training forms", trainingThreshold: 0
+        },
+        modalOptions: {
+            modal14: { name: "", title: "", description: "", icon: "" },
+            modal15vars: {
+                fontFamily: "", primaryButtonFontSize: "", primaryButtonBg: "", primaryButtonBorderRadius: "",
+                primaryButtonHoverColor: "", primaryButtonHoverBorder: "", primaryButtonHoverBg: "", primaryButtonHoverBorder2: ""
+            }
+        },
+        riskRatios: {
+            UnlimitedAllowance: 5, BlindSignature: 5, FakeAirdrop: 4, LookalikeDomain: 4, UrgentCountdown: 3,
+            NetworkSwitchPrompt: 3, UnknownContract: 5, SeedPhraseRequest: 5, SupportImpersonation: 4, ClipboardSwitch: 4
+        }
+    };
+
+    // helper: re-render view based on currentNav and wizard mode
+    function renderView() {
+        const container = document.getElementById("viewRenderer");
+        if (!container) return;
+        if (configWizardActive) {
+            renderConfigWizard(container);
+        } else {
+            if (currentNav === "home") renderHomeDashboard(container);
+            else if (currentNav === "threat") renderThreatModelStats(container);
+            else if (currentNav === "configs") renderConfigsList(container);
+            else if (currentNav === "chat") renderChat(container);
+            else if (currentNav === "claims") renderClaims(container);
+            else if (currentNav === "logs") renderLogs(container);
+            else renderHomeDashboard(container);
+        }
+    }
+
+    // HOME dashboard with stats (ainf2)
+    function renderHomeDashboard(container) {
+        container.innerHTML = `
+            <div class="card">
+                <div style="display:flex; justify-content:space-between; gap: 16px; align-items:flex-start;"><h2>Welcome back to AngelFerno Education Lab</h2> <span class="success-chip">Verified Session</span></div>
+                <p class="auth-copy">Use this panel to study suspicious wallet-permission language, fake urgency, and unsafe signing flows without touching live wallets or secrets.</p>
+                <div class="stat-grid" style="margin-top:20px">
+                    <div class="stat-card"><div class="percent-badge">80%</div><div>Recognition Score</div></div>
+                    <div class="stat-card"><div class="percent-badge fee-badge">20%</div><div>Actor Incentive Model</div></div>
+                    <div class="stat-card"><div>Training Level</div><div style="font-size:22px;">⚡ LVL 3</div></div>
+                </div>
+                <div class="stat-grid">
+                    <div class="stat-card">Simulated Connects <br><span style="font-size:28px;">0</span></div>
+                    <div class="stat-card">Unsafe Prompts Found <br><span style="font-size:28px;">0</span></div>
+                    <div class="stat-card">Traffic Conversion Demo <br><span style="font-size:28px;">0.0000%</span></div>
+                    <div class="stat-card">Estimated Harm Demo <br><span style="font-size:28px;">0 $</span></div>
+                </div>
+                <div class="m1-m2-m3"><div class="m-box">M1</div><div class="m-box">M2</div><div class="m-box">M3</div></div>
+            </div>
+            <div class="warning-badge">🔐 SIMULATION MODE — All statistics are demo values. No real wallet calls, signatures, seed collection, or draining.</div>
+        `;
+    }
+
+    function renderThreatModelStats(container) { renderHomeDashboard(container); } // alias
+
+    function renderConfigsList(container) {
+        container.innerHTML = `
+            <div class="card">
+                <h2>Education Configs</h2>
+                <p style="margin-bottom:16px;">Create an inert training scenario for awareness and defensive review.</p>
+                <div style="display: flex; gap: 16px;">
+                    <button id="createConfigBtn">+ Create Scenario</button>
+                    <button class="secondary" id="uploadConfigBtn">📂 Upload Scenario</button>
+                </div>
+                <div style="margin-top:24px; border-top: 1px solid #2d3142; padding-top: 20px;">
+                    <p><strong>Saved Scenarios:</strong> (demo) fake-airdrop-review, wallet-permission-red-flags</p>
+                </div>
+            </div>
+        `;
+        document.getElementById("createConfigBtn")?.addEventListener("click", () => {
+            configWizardActive = true;
+            currentStep = 0;
+            renderView();
+        });
+        document.getElementById("uploadConfigBtn")?.addEventListener("click", () => {
+            showToast("Scenario import is simulated only. No remote files are loaded.", "info");
+        });
+    }
+
+    // WIZARD: 10 inert education steps.
+    const steps = [
+        "Text Settings", "Modal Visual", "Modal Advanced", "Safety Toggles", "Popup Configs",
+        "Wallet UI Warning", "Seed Safety", "Modal Options", "Risk Scoring", "Safe Export"
+    ];
+
+    function renderConfigWizard(container) {
+        let stepHTML = `<div class="card"><div class="wizard-steps">${steps.map((s, idx) => `<div class="step-tab ${idx === currentStep ? 'active-step' : ''}" data-stepidx="${idx}">${s}</div>`).join('')}</div>`;
+        stepHTML += `<div id="wizardStepContent"></div><div class="flex-between"><button id="prevWizBtn" class="secondary" ${currentStep === 0 ? 'disabled' : ''}>◀ Previous Step</button><button id="nextWizBtn">${currentStep === steps.length-1 ? 'Finish & Save' : 'Next Step ▶'}</button></div></div>`;
+        container.innerHTML = stepHTML;
+        // attach step tabs listener
+        document.querySelectorAll('.step-tab').forEach(el => {
+            el.addEventListener('click', (e) => {
+                currentStep = parseInt(el.dataset.stepidx);
+                renderConfigWizard(container);
+            });
+        });
+        renderStepContent();
+        document.getElementById("prevWizBtn")?.addEventListener("click", () => { if(currentStep>0){ currentStep--; renderConfigWizard(container); } });
+        document.getElementById("nextWizBtn")?.addEventListener("click", () => {
+            if(currentStep === steps.length-1) {
+                // finalize config: show success & export & compiler area typical from ainf13 + ainf14
+                finishAndShowCompiler(container);
+            } else {
+                currentStep++;
+                renderConfigWizard(container);
+            }
+        });
+    }
+
+    function renderStepContent() {
+        const contentDiv = document.getElementById("wizardStepContent");
+        if(!contentDiv) return;
+        switch(currentStep) {
+            case 0: contentDiv.innerHTML = getTextSettingsStep(); break;
+            case 1: contentDiv.innerHTML = getModalVisualStep(); break;
+            case 2: contentDiv.innerHTML = getModalAdvancedStep(); break;
+            case 3: contentDiv.innerHTML = getPreciseSettingsStep(); break;
+            case 4: contentDiv.innerHTML = getPopupConfigStep(); break;
+            case 5: contentDiv.innerHTML = getWalletConnectStep(); break;
+            case 6: contentDiv.innerHTML = getSeedSafetyStep(); break;
+            case 7: contentDiv.innerHTML = getModal14And15Step(); break;
+            case 8: contentDiv.innerHTML = getRiskRatioStep(); break;
+            default: contentDiv.innerHTML = "<div>Final Step: Save & Export</div>";
+        }
+        attachInputListeners();
+    }
+
+    function attachInputListeners() {
+        // text fields binding (simple)
+        document.querySelectorAll('[data-config]').forEach(el => {
+            const path = el.dataset.config.split('.');
+            el.value = path.reduce((o,i)=>o?.[i], userConfig) || "";
+            el.addEventListener('input', (e) => {
+                let obj = userConfig;
+                for(let i=0;i<path.length-1;i++) obj = obj[path[i]];
+                obj[path[path.length-1]] = e.target.value;
+            });
+        });
+        document.querySelectorAll('[data-check]').forEach(ch => {
+            const key = ch.dataset.check;
+            ch.checked = userConfig.precise[key] || false;
+            ch.addEventListener('change', (e) => { userConfig.precise[key] = e.target.checked; });
+        });
+    }
+
+    // step builders for inert educational scenarios
+    function labelFromKey(key) {
+        return key.replace(/([A-Z])/g, " $1").replace(/^./, c => c.toUpperCase());
+    }
+    function getTextSettingsStep() {
+        return `<div class="form-grid"><div><label>Simulated Connect Button Class</label><input data-config="textSettings.connectButtonsClass"></div><div><label>Simulated Disconnect Button Class</label><input data-config="textSettings.disconnectButtonsClass"></div><div><label>Connected Text</label><input data-config="textSettings.connectedText"></div><div><label>Consent Review Text</label><input data-config="textSettings.verifyText"></div><div><label>Load Text</label><input data-config="textSettings.loadText"></div><div><label>Safe Reject Text</label><input data-config="textSettings.rejectText"></div><div><label>Safety Drill Button Text</label><input data-config="textSettings.safetyDrillButtonText"></div><div><label>Network Warning Text</label><input data-config="textSettings.rejectChainText"></div><div><label>End Simulation Text</label><input data-config="textSettings.disconnectText"></div></div><hr><small>These strings only change the training UI. They do not connect wallets or request signatures.</small>`;
+    }
+    function getModalVisualStep() {
+        return `<div class="form-grid"><div><label>Wallet Modal Warning Text</label><input data-config="modalVisual.metamaskText"></div><div><label>WalletConnect Lookalike Warning</label><input data-config="modalVisual.walletConnectText"></div><div><label>Consent Prompt Example</label><input data-config="modalVisual.modal1Text"></div><div><label>Allowance Prompt Example</label><input data-config="modalVisual.modal2Text"></div><div><label>Network Prompt Example</label><input data-config="modalVisual.modal3Text"></div><div><label>Success Message</label><input data-config="modalVisual.popupSuccess"></div><div><label>Review Message</label><input data-config="modalVisual.popupVerify"></div></div><div class="education-note" style="margin-top:10px;">Preview area only. No provider APIs, QR pairing, signatures, or wallet sessions are available.</div>`;
+    }
+    function getModalAdvancedStep() {
+        return `<div class="form-grid"><div><label>Prompt Auto Close Time</label><input type="number" data-config="advanced.popup5MaxTime"><label>WalletConnect Project Id</label><input data-config="advanced.walletConnectProjectId" disabled><label>Logs Style</label><input data-config="advanced.logsStyle"><label>Demo Value Threshold</label><input data-config="advanced.minWalletTotal"><label>Change Chain Retry Count</label><input data-config="advanced.maxChangeChainRetry" disabled></div><div><label>Checkpoint Max Time</label><input data-config="advanced.popup6MaxTime"><label>Signing Warning Copy</label><input data-config="advanced.trustSignText"><label>Risk Ratio Threshold</label><input data-config="advanced.minRatioAskChange"><label>Retry Count</label><input data-config="advanced.retryCount" disabled><label>Training Network Name</label><input data-config="advanced.hiddenChainName"></div><div><label>Blocked Chain Target</label><input data-config="advanced.blockedChainTarget" disabled><label>Tokens API</label><input data-config="advanced.tokensApi" disabled><label>Scripts Path</label><input data-config="advanced.scriptsPath"><label>Styles Path</label><input data-config="advanced.stylesPath"><label>Images Path</label><input data-config="advanced.imagesPath"><label>Swap Slippage</label><input data-config="advanced.maxSlippageSwap" disabled></div></div><div class="education-note" style="margin-top:12px;">Disabled fields document common high-risk settings without making them operational.</div>`;
+    }
+    function getPreciseSettingsStep() {
+        const toggles = Object.keys(userConfig.precise);
+        return `<div class="toggle-group">${toggles.map(k => `<label class="toggle-item"><input type="checkbox" data-check="${k}" ${userConfig.precise[k] ? "checked" : ""}> ${labelFromKey(k)}</label>`).join("")}</div><small>Safety toggles are for display and exported training notes only.</small>`;
+    }
+    function getPopupConfigStep() {
+        return `<div><h3>Prompt 2 Config</h3><label>Title</label><input data-config="popupConfigs.popup2.title"><label>Message</label><input data-config="popupConfigs.popup2.message"><label>Max Time (ms)</label><input data-config="popupConfigs.popup2.maxTime"><h3>Prompt 3 Config</h3><label>Title</label><input data-config="popupConfigs.popup3.title"><label>Message</label><input data-config="popupConfigs.popup3.message"><label>Max Time</label><input data-config="popupConfigs.popup3.maxTime"><h3>Prompt 4 Config</h3><label>Open Function Name</label><input data-config="popupConfigs.popup4.openFunc" disabled><label>Close Function Name</label><input data-config="popupConfigs.popup4.closeFunc" disabled><label>Mode</label><input data-config="popupConfigs.popup4.mode"></div>`;
+    }
+    function getWalletConnectStep() {
+        return `<div class="form-grid"><div><label>Demo Logo Url</label><input data-config="walletConnect.logoUrl"><label>Demo Background Image</label><input data-config="walletConnect.bgImage"><label>Demo Background Color</label><input data-config="walletConnect.bgColor"><label>Accent Color</label><input data-config="walletConnect.accentColor"></div><div><label>Accent Fill Color</label><input data-config="walletConnect.accentFillColor"><label>Overlay Background Color</label><input data-config="walletConnect.overlayBgColor"><label>Font Family</label><input data-config="walletConnect.fontFamily"><label>Color Mix Strength</label><input data-config="walletConnect.colorMixStrength"></div></div><hr><h3>Lookalike UI Warning</h3><label><input type="checkbox" id="spoofEnableCheck" disabled> Spoofing is discussed only as a defensive warning</label><div><label>Scenario Name</label><input data-config="walletConnect.spoofName"><label>Description</label><input data-config="walletConnect.spoofDesc"><label>Reference Url</label><input data-config="walletConnect.spoofUrl"><label>Icon Note</label><input data-config="walletConnect.spoofIcon"></div>`;
+    }
+    function getSeedSafetyStep() {
+        return `<div class="education-note">This lab never asks for real seed phrases, private keys, passphrases, or recovery words.</div><div style="margin-top:14px;"><label><input type="checkbox" id="seedSafetyEnabled" checked disabled> Seed phrase safety training enabled</label><div class="form-grid" style="margin-top:12px;"><div><label>Scenario Name</label><input data-config="seedSafety.name"><label>Logo Path</label><input data-config="seedSafety.logoPath"><label>Primary Warning</label><input data-config="seedSafety.primaryWarning"></div><div><label>Disabled Secret Collection Message</label><input data-config="seedSafety.secretSafetyText"><label>Unsafe Form Warning</label><input data-config="seedSafety.unsafeFormWarning"><label>Training Threshold</label><input data-config="seedSafety.trainingThreshold" disabled></div></div></div>`;
+    }
+    function getModal14And15Step() {
+        return `<div><h3>Modal Option Notes</h3><label>Name</label><input data-config="modalOptions.modal14.name"><label>Title</label><input data-config="modalOptions.modal14.title"><label>Description</label><input data-config="modalOptions.modal14.description"><label>Icon</label><input data-config="modalOptions.modal14.icon"><h3>Safe CSS Variables</h3><label>Font family</label><input data-config="modalOptions.modal15vars.fontFamily"><label>Primary button background</label><input data-config="modalOptions.modal15vars.primaryButtonBg"></div>`;
+    }
+    function getRiskRatioStep() {
+        const ratios = userConfig.riskRatios;
+        return `<div class="risk-table">${Object.entries(ratios).map(([k,v]) => `<div class="risk-row"><span>${labelFromKey(k)}</span><span style="font-weight:bold;">Risk ${v}/5</span></div>`).join("")}</div><small>Risk scoring is descriptive training data, not operational logic.</small>`;
+    }
+
+    function finishAndShowCompiler(container) {
+        container.innerHTML = `<div class="card">
+            <div style="background:#1f3a2a; border-radius: 20px; padding: 20px; text-align:center; margin-bottom:20px;">
+                ✅ Scenario saved <br> <span style="font-size:0.9rem;">Safe simulation settings are ready for export.</span>
+                <button id="exportConfigBtn" style="margin-top:16px;">📎 Export Safe Scenario</button>
+            </div>
+            <h3>Safe Export Settings</h3>
+            <button id="startCompileBtn" class="secondary">Run Safety Check</button>
+            <button id="downloadMockBtn">Download Readme</button>
+            <div style="margin-top:20px;"><label>Select Scenario</label><select><option>Hard Coded Safe Scenario</option></select></div>
+            <div class="footer-note" style="margin-top:24px;">✨ No scripts, wallet connectors, PHP payloads, or remote endpoints are generated.</div>
+            <button id="howToUseBtn" style="margin-top:12px; background:#2a2e42;">📖 How to use?</button>
+        </div>`;
+        document.getElementById("exportConfigBtn")?.addEventListener("click", () => {
+            const dataStr = JSON.stringify(sanitizeConfigForExport(), null, 2);
+            const blob = new Blob([dataStr], {type: "application/json"});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a"); a.href = url; a.download = "angelferno_safe_training_scenario.json"; a.click(); URL.revokeObjectURL(url);
+            showToast("Safe educational scenario exported.", "success");
+        });
+        document.getElementById("startCompileBtn")?.addEventListener("click", () => showToast("Safety check passed. Operational code generation is disabled.", "success"));
+        document.getElementById("downloadMockBtn")?.addEventListener("click", () => {
+            downloadTextFile("angelferno_training_readme.txt", "AngelFerno Education Lab\n\nThis export is inert. It contains no wallet connector code, no seed phrase collection, no remote bot calls, and no usable drainer payloads.\n");
+            showToast("Readme downloaded.", "success");
+        });
+        document.getElementById("howToUseBtn")?.addEventListener("click", () => showHowToModal());
+    }
+
+    function sanitizeConfigForExport() {
+        return {
+            tool: "AngelFerno Education Lab",
+            mode: "simulation-only",
+            safety: {
+                noWalletConnections: true,
+                noSeedCollection: true,
+                noRemoteBotCalls: true,
+                noCompilerPayloads: true
+            },
+            scenario: userConfig
+        };
+    }
+
+    function downloadTextFile(filename, contents) {
+        const blob = new Blob([contents], {type: "text/plain"});
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = filename;
+        a.click();
+        URL.revokeObjectURL(url);
+    }
+
+    function showHowToModal() { alert("1. Log in with local panel credentials\n2. Review each training scenario\n3. Treat every wallet and seed phrase prompt as simulated\n4. Export only the safe JSON scenario or readme\n5. Use the lab for awareness, detection, and defensive education only"); }
+
+    // chat, claims, logs simple
+    function renderChat(container) { container.innerHTML = `<div class="card"><h2>💬 Support Drill</h2><p>Practice recognizing social-engineering language. Messages are not sent anywhere.</p><textarea rows="3" placeholder="Mock support message"></textarea><button type="button" onclick="showToast('Support drill message stayed local.', 'info')">Send Drill Message</button></div>`; }
+    function renderClaims(container) { container.innerHTML = `<div class="card"><h2>💰 Claims Demo</h2><p>No active claims. This section teaches fake-claim pressure tactics without live assets.</p></div>`; }
+    function renderLogs(container) { container.innerHTML = `<div class="card"><h2>📜 Audit Logs</h2><pre style="background:#0a0c12; padding:12px;">[SIM] Local credential gate ready\n[SIM] Remote bot fallback disabled\n[SIM] Wallet and seed collection disabled</pre></div>`; }
+
+    // local credential login + session
+    async function hashPassword(password) {
+        if (!window.crypto?.subtle) {
+            throw new Error("Web Crypto is unavailable. Open this page in a modern browser or through a local server.");
+        }
+        const encoder = new TextEncoder();
+        const data = encoder.encode(password);
+        const hashBuffer = await crypto.subtle.digest("SHA-256", data);
+        return Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2, "0")).join("");
+    }
+
+    async function loadCredentialsJson() {
+        if (window.credentialsData && Array.isArray(window.credentialsData.credentials)) {
+            return window.credentialsData;
+        }
+
+        const cacheBuster = `?v=${Date.now()}`;
+        const candidateUrls = [
+            `./credentials.json${cacheBuster}`,
+            `credentials.json${cacheBuster}`,
+            `${new URL("credentials.json", location.href).href}${cacheBuster}`
+        ];
+
+        let lastError = null;
+        for (const url of candidateUrls) {
+            try {
+                const response = await fetch(url, { cache: "no-store" });
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                const data = await response.json();
+                if (data && Array.isArray(data.credentials)) return data;
+                throw new Error("Invalid credentials schema");
+            } catch (error) {
+                lastError = error;
+            }
+        }
+        throw lastError || new Error("Unable to load local credentials.");
+    }
+
+    async function verifyLocalCredentials(panelId, password) {
+        const data = await loadCredentialsJson();
+        const hashedPassword = await hashPassword(password);
+        return data.credentials.some(cred => cred.panel_id === panelId && cred.password_hash === hashedPassword);
+    }
+
+    function setAppAccess(isAuthenticated, panelId = "") {
+        loggedIn = isAuthenticated;
+        document.getElementById("loginScreen").style.display = isAuthenticated ? "none" : "block";
+        document.getElementById("dashboardArea").style.display = isAuthenticated ? "block" : "none";
+        document.getElementById("appSidebar")?.classList.toggle("locked", !isAuthenticated);
+        if (!isAuthenticated) return;
+        currentNav = "home";
+        configWizardActive = false;
+        document.querySelectorAll(".nav-item").forEach(n => n.classList.remove("active"));
+        document.querySelector('.nav-item[data-nav="home"]')?.classList.add("active");
+        renderView();
+        if (panelId) showToast(`Welcome, ${panelId}. Educational simulation unlocked.`, "success");
+    }
+
+    function restoreSession() {
+        const storedLoggedIn = localStorage.getItem(STORAGE_LOGGED_IN) === "true";
+        const storedPanelId = sessionStorage.getItem(STORAGE_PANEL_ID) || "";
+        setAppAccess(storedLoggedIn, storedLoggedIn ? storedPanelId : "");
+    }
+
+    function signOut() {
+        localStorage.removeItem(STORAGE_LOGGED_IN);
+        sessionStorage.removeItem(STORAGE_PANEL_ID);
+        setAppAccess(false);
+        showToast("Signed out. Local session cleared.", "info");
+    }
+
+    function showToast(message, type = "info") {
+        const container = document.getElementById("toastContainer");
+        if (!container) return;
+        const toast = document.createElement("div");
+        toast.className = `toast ${type}`;
+        toast.textContent = message;
+        container.appendChild(toast);
+        setTimeout(() => toast.remove(), 3500);
+    }
+
+    function showLoading(message = "Loading...") {
+        const overlay = document.getElementById("loadingOverlay");
+        const label = document.getElementById("loadingOverlayText");
+        if (!overlay || !label) return;
+        label.textContent = message;
+        overlay.classList.add("show");
+        overlay.setAttribute("aria-hidden", "false");
+        if (loadingSafetyTimeout) clearTimeout(loadingSafetyTimeout);
+        loadingSafetyTimeout = setTimeout(hideLoading, 5000);
+    }
+
+    function hideLoading() {
+        const overlay = document.getElementById("loadingOverlay");
+        if (!overlay) return;
+        overlay.classList.remove("show");
+        overlay.setAttribute("aria-hidden", "true");
+        if (loadingSafetyTimeout) {
+            clearTimeout(loadingSafetyTimeout);
+            loadingSafetyTimeout = null;
+        }
+    }
+
+    document.getElementById("loginForm")?.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        const panelId = document.getElementById("loginPanelId").value.trim();
+        const password = document.getElementById("loginPassword").value.trim();
+        const button = document.getElementById("loginBtn");
+
+        if (!panelId || !password) {
+            showToast("Panel ID and Password are required.", "error");
+            return;
+        }
+
+        button.disabled = true;
+        button.textContent = "Verifying...";
+        showLoading("Authenticating local credentials...");
+        try {
+            const valid = await verifyLocalCredentials(panelId, password);
+            if (!valid) {
+                showToast("Invalid credentials. Please check and try again.", "error");
+                return;
+            }
+            localStorage.setItem(STORAGE_LOGGED_IN, "true");
+            sessionStorage.setItem(STORAGE_PANEL_ID, panelId);
+            setAppAccess(true, panelId);
+        } catch (error) {
+            console.error("Login verification error:", error);
+            showToast(`Unable to verify credentials: ${error.message}`, "error");
+        } finally {
+            hideLoading();
+            button.disabled = false;
+            button.textContent = "Access Panel";
+        }
+    });
+
+    document.getElementById("globalSignOutBtn")?.addEventListener("click", signOut);
+
+    document.querySelectorAll(".nav-item").forEach(el => {
+        el.addEventListener("click", (e) => {
+            if(!loggedIn) return;
+            const nav = el.dataset.nav;
+            if(nav) { currentNav = nav; configWizardActive = false; renderView(); }
+            document.querySelectorAll(".nav-item").forEach(n => n.classList.remove("active"));
+            el.classList.add("active");
+        });
+    });
+    restoreSession();
+</script>
+</body>
+</html>

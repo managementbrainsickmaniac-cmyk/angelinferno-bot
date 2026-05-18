@@ -1,0 +1,28 @@
+<!-- 
+    DEPLOYMENT CONFIGURATION
+    Update BOT_API_BASE to your hosted service URL below.
+    
+    Local Development:  http://localhost:8080
+    Render.com:        https://angelferno-bot.onrender.com
+    Railway.app:       https://your-app-name.up.railway.app
+    Custom Domain:     https://your-domain.com
+-->
+
+<script>
+// Auto-detect and configure API endpoint
+window.API_CONFIG = {
+    // Change this to your hosted URL
+    PRODUCTION_URL: 'https://angelferno-bot.onrender.com',
+    // Local development URL (used when accessing from localhost)
+    LOCAL_URL: 'http://localhost:8080',
+    // Auto-detect which to use
+    getBaseURL: function() {
+        const isLocal = window.location.hostname === 'localhost' || 
+                       window.location.hostname === '127.0.0.1';
+        return isLocal ? this.LOCAL_URL : this.PRODUCTION_URL;
+    }
+};
+
+// Export for use in HTML
+window.BOT_API_BASE = window.API_CONFIG.getBaseURL();
+</script>
