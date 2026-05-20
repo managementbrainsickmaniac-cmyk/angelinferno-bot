@@ -43,6 +43,7 @@ Your GitHub repo should include:
 - ✅ `fernotest.py` - Your bot file
 - ✅ `requirements.txt` - Python dependencies
 - ✅ `Procfile` - Render deployment config
+- ✅ `render.yaml` - Render service configuration
 - ✅ `.env.template` - Environment variables template (NOT real .env with secrets!)
 - ✅ `Web/angelferno_merged.html` - Your website
 - ✅ `.gitignore` - To exclude sensitive files
