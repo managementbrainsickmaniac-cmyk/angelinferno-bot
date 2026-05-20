@@ -1,1 +1,1 @@
-web: python fernotest.py
+web: python angelinferno-bot.py
