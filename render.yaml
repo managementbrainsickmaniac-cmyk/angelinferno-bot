@@ -1,0 +1,15 @@
+services:
+  - type: web_service
+    name: angelferno-bot
+    env: python
+    branch: main
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: python fernotest.py
+    autoDeploy: true
+    healthCheckPath: /health
+    envVars:
+      - key: TELEGRAM_MODE
+        value: webhook
+      - key: PORT
+        value: 8080
