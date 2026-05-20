@@ -3,7 +3,7 @@ services:
     name: angelferno-bot
     env: python
     branch: main
-    plan: free
+    plan: starter
     buildCommand: pip install -r requirements.txt
     startCommand: python fernotest.py
     autoDeploy: true
