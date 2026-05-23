@@ -17,7 +17,6 @@ def _ensure_python_dependencies():
             )
 
         print("[startup] Installing Python dependencies from requirements.txt...", file=sys.stderr)
-        subprocess.check_call([sys.executable, "-m", "pip", "install", "--upgrade", "pip"])
         subprocess.check_call([
             sys.executable,
             "-m",
