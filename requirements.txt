@@ -1,6 +1,7 @@
 aiohttp
 python-telegram-bot[job-queue]
 python-dotenv
+redis
 bip44
 web3
 aiogram
