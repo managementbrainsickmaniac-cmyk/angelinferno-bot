@@ -1,0 +1,8 @@
+{
+  "name": "angelinferno-bot",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "postinstall": "python -m venv .venv && .venv/bin/python -m pip install --upgrade pip && .venv/bin/python -m pip install --no-cache-dir -r requirements.txt"
+  }
+}
