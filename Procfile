@@ -1,1 +1,1 @@
-web: python angelinferno-bot.py
+web: ./.venv/bin/python angelinferno-bot.py
