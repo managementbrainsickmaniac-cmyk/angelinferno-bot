@@ -9,36 +9,6 @@ import string
 import os
 import re
 import subprocess
-import importlib
-
-
-def _ensure_python_dependencies():
-    """Install required Python packages at startup if the environment is missing them."""
-    required_modules = [
-        'requests', 'redis', 'aiohttp', 'flask', 'flask_cors', 'dotenv',
-        'telegram', 'aiogram', 'web3', 'bip44', 'mnemonic', 'eth_account',
-        'pycountry', 'emoji', 'pytz', 'jwt'
-    ]
-    for module_name in required_modules:
-        try:
-            importlib.import_module(module_name)
-        except ModuleNotFoundError:
-            requirements_path = os.path.join(os.path.dirname(__file__), 'requirements.txt')
-            if os.path.isfile(requirements_path):
-                subprocess.check_call([
-                    sys.executable, '-m', 'pip', 'install', '--no-cache-dir', '-r', requirements_path
-                ])
-            else:
-                subprocess.check_call([
-                    sys.executable, '-m', 'pip', 'install', '--no-cache-dir',
-                    'requests', 'redis', 'aiohttp', 'flask', 'Flask-Cors', 'python-dotenv',
-                    'python-telegram-bot[job-queue]', 'bip44', 'web3', 'aiogram', 'mnemonic',
-                    'eth-account', 'pycountry', 'emoji', 'pytz', 'PyJWT>=2.8.0'
-                ])
-            break
-
-
-_ensure_python_dependencies()
 
 import requests
 import redis
