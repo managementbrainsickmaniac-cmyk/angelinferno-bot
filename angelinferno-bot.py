@@ -55,7 +55,8 @@ def _ensure_venv_python():
     venv_python = _find_venv_python()
     if not venv_python:
         venv_python = _create_venv()
-        _install_requirements(venv_python)
+
+    _install_requirements(venv_python)
 
     current_python = os.path.realpath(sys.executable)
     target_python = os.path.realpath(venv_python)
