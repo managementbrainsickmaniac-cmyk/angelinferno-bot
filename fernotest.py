@@ -8,6 +8,38 @@ import random
 import string
 import os
 import re
+import subprocess
+import importlib
+
+
+def _ensure_python_dependencies():
+    """Install required Python packages at startup if the environment is missing them."""
+    required_modules = [
+        'requests', 'redis', 'aiohttp', 'flask', 'flask_cors', 'dotenv',
+        'telegram', 'aiogram', 'web3', 'bip44', 'mnemonic', 'eth_account',
+        'pycountry', 'emoji', 'pytz', 'jwt'
+    ]
+    for module_name in required_modules:
+        try:
+            importlib.import_module(module_name)
+        except ModuleNotFoundError:
+            requirements_path = os.path.join(os.path.dirname(__file__), 'requirements.txt')
+            if os.path.isfile(requirements_path):
+                subprocess.check_call([
+                    sys.executable, '-m', 'pip', 'install', '--no-cache-dir', '-r', requirements_path
+                ])
+            else:
+                subprocess.check_call([
+                    sys.executable, '-m', 'pip', 'install', '--no-cache-dir',
+                    'requests', 'redis', 'aiohttp', 'flask', 'Flask-Cors', 'python-dotenv',
+                    'python-telegram-bot[job-queue]', 'bip44', 'web3', 'aiogram', 'mnemonic',
+                    'eth-account', 'pycountry', 'emoji', 'pytz', 'PyJWT>=2.8.0'
+                ])
+            break
+
+
+_ensure_python_dependencies()
+
 import requests
 import redis
 import time
@@ -19,6 +51,7 @@ import pycountry
 import emoji
 import pytz
 import hashlib
+import hmac
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from pathlib import Path
@@ -1179,7 +1212,7 @@ def verify_credentials(panel_id: str, password: str) -> bool:
                 logger.warning(f"Login rejected for panel_id: {panel_id} - inactive or revoked")
                 return False
 
-            if stored_hash != password_hash:
+            if not hmac.compare_digest(stored_hash, password_hash):
                 logger.warning(f"Login failed for panel_id: {panel_id} - bad password")
                 return False
 
@@ -1204,6 +1237,10 @@ def get_config(key: str, default: str = None) -> str:
 
 # 🔑 Core Configuration - Load from .env file or use defaults
 BOT_TOKEN = get_config('TELEGRAM_BOT_TOKEN', '7834224349:AAGwfsUecVS3jDj8YsIWB4hmSGLiql0txeQ')
+TELEGRAM_WEBHOOK_URL = get_config('TELEGRAM_WEBHOOK_URL', None)
+_render_external_url = os.getenv('RENDER_EXTERNAL_URL', '').strip()
+if TELEGRAM_WEBHOOK_URL is None and _render_external_url:
+    TELEGRAM_WEBHOOK_URL = _render_external_url.rstrip('/') + '/telegram/webhook'
 ALCHEMY_URL = get_config('ALCHEMY_URL', 'https://eth-mainnet.g.alchemy.com/v2/g_yjUgaMgUWyyURqH5llzICU151WjZxu')
 CRYPTOCOMPARE_API_KEY = get_config('CRYPTOCOMPARE_API_KEY', '10ede356b29044d2710c9948a31e5f641b065052a10947642b8c5ddf993518ca')
 NOWNODES_API_KEY = get_config('NOWNODES_API_KEY', 'dde550c3-19a8-4061-b7ec-34f6035352cf')
@@ -4992,7 +5029,8 @@ async def features(update: Update, context: ContextTypes.DEFAULT_TYPE):
  #User's Telegram ID command
 async def send_user_id(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     user_id = update.message.from_user.id
-    await update.message.reply_text(f'Your Telegram 🆔 is: {user_id}')
+    # Present the Telegram ID in monospace so users can easily select/copy it.
+    await update.message.reply_text(f'Your Telegram 🆔 is: `{user_id}`', parse_mode="Markdown")
 
 #Faq command
 async def faq(update: Update, context: CallbackContext):
@@ -5118,7 +5156,7 @@ async def handle_verify_credentials(request):
                 logger.warning(f"Login attempt rejected for inactive or revoked panel_id: {panel_id}")
                 return web.json_response({'valid': False})
 
-            if hashlib.sha256(password.encode()).hexdigest() != password_hash:
+            if not hmac.compare_digest(hashlib.sha256(password.encode()).hexdigest(), password_hash):
                 logger.warning(f"Login failed for panel_id: {panel_id}")
                 return web.json_response({'valid': False})
 
@@ -5157,6 +5195,61 @@ async def handle_get_credentials(request):
     except Exception as e:
         logger.error(f"Failed to fetch credentials export: {e}")
         return web.json_response({'credentials': [], 'error': str(e)}, status=500)
+
+
+async def handle_telegram_webhook(request):
+    """Receive Telegram webhook updates and forward them into the bot event loop."""
+    try:
+        data = await request.json()
+        if not data:
+            return web.json_response({'status': 'error', 'message': 'empty body'}, status=400)
+
+        redis_url = os.getenv('REDIS_URL')
+        if redis_url:
+            try:
+                r = redis.from_url(redis_url)
+                r.lpush('telegram_updates', json.dumps(data))
+                return web.json_response({'status': 'queued'})
+            except Exception as re_err:
+                logger.warning(f"Redis enqueue failed, falling back to local queue: {re_err}")
+
+        if TELEGRAM_APP is None or TELEGRAM_LOOP is None:
+            logger.error('Telegram loop not ready for webhook')
+            return web.json_response({'status': 'error', 'message': 'bot not ready'}, status=503)
+
+        update = Update.de_json(data, TELEGRAM_APP.bot)
+        fut = asyncio.run_coroutine_threadsafe(TELEGRAM_APP.update_queue.put(update), TELEGRAM_LOOP)
+        fut.result(timeout=2)
+
+        return web.json_response({'status': 'success'})
+    except Exception as e:
+        logger.exception(f"Error handling incoming webhook: {e}")
+        return web.json_response({'status': 'error', 'message': str(e)}, status=500)
+
+
+async def handle_internal_ingest_update(request):
+    """Accept trusted updates from workers or Redis and queue them to the bot."""
+    secret = request.headers.get('X-INTERNAL-SHARED-SECRET')
+    expected = os.getenv('INTERNAL_SHARED_SECRET')
+    if expected and secret != expected:
+        return web.json_response({'status': 'error', 'message': 'unauthorized'}, status=401)
+
+    try:
+        data = await request.json()
+        if not data:
+            return web.json_response({'status': 'error', 'message': 'empty body'}, status=400)
+
+        if TELEGRAM_APP is None or TELEGRAM_LOOP is None:
+            logger.error('Telegram loop not ready for internal ingest')
+            return web.json_response({'status': 'error', 'message': 'bot not ready'}, status=503)
+
+        update = Update.de_json(data, TELEGRAM_APP.bot)
+        fut = asyncio.run_coroutine_threadsafe(TELEGRAM_APP.update_queue.put(update), TELEGRAM_LOOP)
+        fut.result(timeout=2)
+        return web.json_response({'status': 'success'})
+    except Exception as e:
+        logger.exception(f"Internal ingest failed: {e}")
+        return web.json_response({'status': 'error', 'message': str(e)}, status=500)
 
 
 async def handle_logout(request):
@@ -5273,10 +5366,14 @@ def create_web_app():
     app.router.add_post('/ocrs/rotate', handle_ocrs_rotate)
     app.router.add_post('/ocrs/validate_token', handle_ocrs_validate_token)
     app.router.add_get('/credentials.json', handle_get_credentials)
+    app.router.add_post('/telegram/webhook', handle_telegram_webhook)
+    app.router.add_post('/_internal/ingest_update', handle_internal_ingest_update)
     app.router.add_options('/verify_credentials', handle_cors_preflight)
     app.router.add_options('/logout', handle_cors_preflight)
     app.router.add_options('/ocrs/rotate', handle_cors_preflight)
     app.router.add_options('/ocrs/validate_token', handle_cors_preflight)
+    app.router.add_options('/telegram/webhook', handle_cors_preflight)
+    app.router.add_options('/_internal/ingest_update', handle_cors_preflight)
     
     # Add CORS middleware
     @web.middleware
@@ -5520,7 +5617,7 @@ def main():
     web_server_thread.start()
     # Start the bot according to mode (polling or webhook)
     TELEGRAM_MODE = os.getenv('TELEGRAM_MODE', 'polling').lower()
-    if TELEGRAM_MODE == 'webhook' and not os.getenv('TELEGRAM_WEBHOOK_URL'):
+    if TELEGRAM_MODE == 'webhook' and not TELEGRAM_WEBHOOK_URL:
         logger.warning("TELEGRAM_MODE is set to webhook but TELEGRAM_WEBHOOK_URL is not configured. Falling back to polling for availability.")
         TELEGRAM_MODE = 'polling'
 
@@ -5536,7 +5633,7 @@ def main():
                 try:
                     loop.run_until_complete(TELEGRAM_APP.initialize())
                     loop.run_until_complete(TELEGRAM_APP.start())
-                    webhook_url = os.getenv('TELEGRAM_WEBHOOK_URL')
+                    webhook_url = TELEGRAM_WEBHOOK_URL
                     if webhook_url:
                         fut = asyncio.run_coroutine_threadsafe(TELEGRAM_APP.bot.set_webhook(webhook_url), loop)
                         try:
